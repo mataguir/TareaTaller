@@ -4,8 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taller</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+    <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
 </head>
 <body>
-    
+    <ons-splitter>
+        <ons-splitter-side id="menu" side="right" width="220px" collapse swipeable>
+            <ons-page>
+                <ons-list>
+                    <ons-list-header>Test</ons-list-header>
+                    <ons-list-item tappeable>Test 1</ons-list-item>
+                </ons-list>
+            </ons-page>
+        </ons-splitter-side>
+        <ons-splitter-content id="contMenu">
+            <ons-navigator swipeable id="navigator" page="login.html"></ons-navigator>
+        </ons-splitter-content>
+    </ons-splitter>
+
+    <template id="login.html">
+        <ons-page>
+            <ons-toolbar>
+                <div class="right">
+                    <ons-toolbar-button onclick="abrirMenu()">
+                        <ons-icon icon="md-menu"></ons-icon>
+                    </ons-toolbar-button>
+                </div>
+                <div class="center">Login</div>
+            </ons-toolbar>
+            <div style="text-align: center; margin-top: 30px;">
+                <p>
+                  <ons-input id="email" modifier="material underbar" placeholder="Email" float></ons-input>
+                </p>
+                <p>
+                  <ons-input id="password" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
+                </p>
+                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
+                <p style="margin-top: 30px;"><ons-button ripple onclick="login()">Iniciar Sesión</ons-button></p>
+                <p>¿No tiene usuario?
+                    <ons-button onclick="registro()" modifier="large--quiet">Registrarse</ons-button>
+                </p>
+            </div>
+        </ons-page>
+    </template>
+
+    <template id="registro.html">
+        <ons-page>
+            <div style="text-align: center; margin-top: 30px;">
+                <p>
+                    <ons-input id="nombre" modifier="material underbar" placeholder="Nombre" float></ons-input>
+                </p>
+                <p>
+                    <ons-input id="apellido" modifier="material underbar" placeholder="Apellido" float></ons-input>
+                </p>
+                <p>
+                    <ons-input id="calle" modifier="material underbar" placeholder="Calle" float></ons-input>
+                </p>
+                <p>
+                    <ons-input id="numeroP" modifier="material underbar" placeholder="Número de Puerta" float></ons-input>
+                  </p>
+                <p>
+                  <ons-input id="email" modifier="material underbar" placeholder="Email" float></ons-input>
+                </p>
+                <p>
+                  <ons-input id="password" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
+                </p>
+                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
+                <p style="margin-top: 30px;">
+                    <ons-button ripple onclick="registrarUsuario()">Registrarse</ons-button>
+                </p>
+            </div>
+        </ons-page>
+    </template>
 </body>
 </html>
