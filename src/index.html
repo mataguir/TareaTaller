@@ -11,20 +11,19 @@
     <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
-    
-        <ons-splitter>
-        <ons-splitter-side id="menu" side="right" width="220px" animation="overlay" collapse swipeable>
+    <ons-splitter>
+         <ons-splitter-side id="menu" side="right" width="220px" animation="overlay" collapse swipeable>
             <ons-page>
                 <ons-list>
-                  <!--  <ons-list-header id="menu-list-header">Usuario logueado</ons-list-header> -->
-                    <ons-list-item onclick="abrirMenu()" tappable>Catálogo</ons-list-item>
-                    <ons-list-item onclick="abrirMenu()" tappable>Favoritos</ons-list-item>
-                    <ons-list-item onclick="abrirMenu()" tappable>Pedidos</ons-list-item>
+                    <ons-list-header id="menu-list-header">Usuario logueado</ons-list-header>
+                    <ons-list-item onclick="irCatalogo()" tappable>Catálogo</ons-list-item>
+                    <ons-list-item onclick="irFavoritos()" tappable>Favoritos</ons-list-item>
+                    <ons-list-item onclick="irPedidos()" tappable>Pedidos</ons-list-item>
                 </ons-list>
             </ons-page>
         </ons-splitter-side>
 
-      <ons-splitter-content >
+        <ons-splitter-content>
 
             <ons-navigator swipeable id="navigator" page="login.html"></ons-navigator>
 
@@ -36,53 +35,119 @@
        
             <!-- El toolbar coloca en la parte superior una barra donde puedo poner botones, textos, íconos, etc. -->
             <ons-page>
-
+              
                 <ons-toolbar>
-                    <div class="left">
+                    <div class="right">
                         <ons-toolbar-button onclick="abrirMenu()">
-                            <ons-icon icon="md-menu"></ons-icon>
+                            <ons-icon size="25px" style="color: green;"  icon="md-menu"></ons-icon>
                         </ons-toolbar-button>
                     </div>
-                    <div class="center">
+                    <div style="color: green" class="center">
                         Home
                     </div>
                 </ons-toolbar>
                 <p style="text-align: center; opacity: 0.6; padding-top: 20px;">
                     Ve al menú para ver opciones
                 </p>
+                <br>
+                <br>
+                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
+                    ¿Desea cerrar sesión?
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                </p>
+
                 </ons-page>
 
 
     </template>
 
     <template id="catalogo.html">
+       
         <ons-page>
             <ons-toolbar>
-                <div class="left">
+                <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
                         <ons-icon icon="md-menu"></ons-icon>
                     </ons-toolbar-button>
                 </div>
                 <div class="center">
-                    Catálogo
+                    Catálogo de productos
                 </div>
             </ons-toolbar>
+            <!-- en esta div está un gif de espera mientras se carga la página -->
+            <div id="divCarga" style="text-align: center;">
+                <img src="img/minions.gif">
+                <br>
+                <div style="margin: 20px auto; width: 320px;">
+                    <h2 style="margin: 0;">Se está procesando su pedido...</h2>
+                    <ons-progress-bar indeterminate></ons-progress-bar>
+               </div>
+               
+              
+            </div>
+            <br>
+            <br>
+            <div id="busquedaDeProductos" style="text-align: center;">
+            <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
+            <!-- también acá debe ir la búsequeda por código QR -->
+            <p style="text-align: center; margin-top: 20px;">
+                <ons-search-input id="txtSearch" placeholder="Buscar producto" onchange=""></ons-search-input>
+
+                <ons-button style=" margin-bottom -14px;" modifier="quiet" onclick="">
+                    <ons-icon style="font-size: 30px;  color: #2979ff;" icon="md-car"></ons-icon>
+                </ons-button>
+            </p>
+                </div>
+
             <ons-card>
                 <div class="title">
-                    Catálogo
+                    Productos seleccionados del catálogo
                 </div>
-                <div class="content">
-                   <p>Probando contenido </p>
-                     
-                </div>
-            </ons-card>
-</ons-page>
+
+                <div class="divResultados">
+                    <p>Aca deberían aparecer todos los productos llamando a la API </p>
+                   
+                        <table border="1">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Precio</th>
+                                    <th><img width="100" height="100" src="img/perrito.jpg"></th>
+                                    <th>Código</th>
+                                    <th>Etiquetas</th>
+                                    <th>Estado</th>
+                                    <th>Icono para guardar como favorito</th>
+                                    <!-- en el código se debe apretar un boton que al seleccionarlo me vaya a los detalles del producto,
+                                         supongo que es esta misma información ampliada-->
+                               </tr>
+                            </thead>
+                            <tbody id="tablaResultadosCuerpo"></tbody>
+                        </table>
+                    </div>
+
+                <br>
+                <br>
+
+                    <!-- esto lo puse porque una vez seleccionado el producto tiene que aparecer la opción de poner cantidad y comprar, hay que ver bien en dónde va -->
+                    <div>
+                        <ons-input id="inputCantidad1" modifier="underbar" placeholder="Cantidad" type="number" float></ons-input>
+                        <ons-button numero-card="1" onclick="comprar()">Comprar</ons-button>
+                    </div>
+
+                <br>
+                <br>
+                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
+                    ¿Desea cerrar sesión?
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                </p>
+                </ons-card>
+        </ons-page>
     </template>
 
     <template id="favoritos.html">
         <ons-page>
             <ons-toolbar>
-                <div class="left">
+                <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
                         <ons-icon icon="md-menu"></ons-icon>
                     </ons-toolbar-button>
@@ -100,13 +165,19 @@
 
                 </div>
             </ons-card>
+            <br>
+            <br>
+            <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
+                ¿Desea cerrar sesión?
+                <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+            </p>
         </ons-page>
     </template>
 
     <template id="pedidos.html">
         <ons-page>
             <ons-toolbar>
-                <div class="left">
+                <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
                         <ons-icon icon="md-menu"></ons-icon>
                     </ons-toolbar-button>
@@ -121,26 +192,21 @@
                 </div>
                 <div class="content">
                     <p>Probando contenido </p>
-
                 </div>
+                <br>
+                <br>
+                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
+                    ¿Desea cerrar sesión?
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                </p>
             </ons-card>
         </ons-page>
     </template>
 
     <template id="login.html">
-        <!-- entiendo que este menu no va en el log in y si va en la Home, que la agregué arriba-->
-        
-        <ons-page>
+       <ons-page>
 
             <ons-toolbar modifier="material">
-
-                 <!--   <div class="right">
-           <ons-toolbar-button onclick="abrirMenu()">
-               <ons-icon icon="fa-bars"></ons-icon>
-           </ons-toolbar-button>
-       </div>
-         -->
-
                 <div class="center">Login</div>
             </ons-toolbar>
            
@@ -178,18 +244,27 @@
                     <ons-input id="calle" modifier="material underbar" placeholder="Calle" float></ons-input>
                 </p>
                 <p>
-                    <ons-input id="numeroP" modifier="material underbar" placeholder="Número de Puerta" float></ons-input>
+                    <ons-input id="numeroP" modifier="material underbar" type="number" placeholder="Número de Puerta" float></ons-input>
                 </p>
                 <p>
-                    <ons-input id="email" modifier="material underbar" placeholder="Email" float></ons-input>
+                    <ons-input id="email" type="email" modifier="material underbar" placeholder="Email" float></ons-input>
+                </p>
+               
+                <p>
+                    <ons-input id="password1" modifier="material underbar" type="password" placeholder="Password"  float></ons-input>
                 </p>
                 <p>
-                    <ons-input id="password" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
+                    <ons-input id="password2" modifier="material underbar" type="password" placeholder="Repita el password"  float></ons-input>
                 </p>
+                <p style="text-align: center; margin-top: 20px; color:#FF0000 ">El password debe tener mínimo 8 caracteres</p>
                 <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;">
                     <ons-button ripple onclick="registrarUsuario()">Registrarse</ons-button>
                 </p>
+                <p id="mensajeVacio">probando vacios</p>
+                <p id="mensajePassword1">probando password</p>
+                <p id="mensajePassword2">probando password2</p>
+                <p id="mensajeOk">probando todo okay</p>
             </div>
         </ons-page>
 </template>
