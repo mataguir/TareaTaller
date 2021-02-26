@@ -1,24 +1,20 @@
 class Usuario {
     constructor(
-        pId,
         pNombre,
         pApellido,
-        pCalle,
-        pNumeroP,
+        pDireccion,
         pEmail,
         pPassword
     ) {
-        this._id = pId;
         this.nombre = pNombre;
         this.apellido = pApellido;
-        this.calle = pCalle;
-        this.numeroP = pNumeroP;
+        this.direccion = pDireccion;
         this.email = pEmail;
         this.password = pPassword;
     }
 }
 
-class NuevoPedido {
+class Pedido {
     constructor(
         pIdProducto,
         pCantidad,
