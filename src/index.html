@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
     <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="clases.js"></script> 
     <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
@@ -32,10 +33,8 @@
     </ons-splitter>
 
     <template id="home.html">
-       
             <!-- El toolbar coloca en la parte superior una barra donde puedo poner botones, textos, íconos, etc. -->
-            <ons-page>
-              
+            <ons-page>   
                 <ons-toolbar>
                     <div class="right">
                         <ons-toolbar-button onclick="abrirMenu()">
@@ -48,17 +47,11 @@
                 </ons-toolbar>
                 <p style="text-align: center; opacity: 0.6; padding-top: 20px;">
                     Ve al menú para ver opciones
-                </p>
-                <br>
-                <br>
+                </p><br><br>
                 <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    ¿Desea cerrar sesión?
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
                 </p>
-
-                </ons-page>
-
-
+            </ons-page>
     </template>
 
     <template id="catalogo.html">
@@ -137,8 +130,7 @@
                 <br>
                 <br>
                 <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    ¿Desea cerrar sesión?
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
                 </p>
                 </ons-card>
         </ons-page>
@@ -168,8 +160,7 @@
             <br>
             <br>
             <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                ¿Desea cerrar sesión?
-                <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
             </p>
         </ons-page>
     </template>
@@ -196,8 +187,7 @@
                 <br>
                 <br>
                 <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    ¿Desea cerrar sesión?
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Si!!</ons-button>
+                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
                 </p>
             </ons-card>
         </ons-page>
@@ -205,21 +195,21 @@
 
     <template id="login.html">
        <ons-page>
-
             <ons-toolbar modifier="material">
                 <div class="center">Login</div>
             </ons-toolbar>
-           
             <div style="text-align: center; margin-top: 30px;">
                 <p>
-                  <ons-input id="email" modifier="material underbar" placeholder="Email" float></ons-input>
+                  <ons-input id="login-email" modifier="material underbar" placeholder="Email" float></ons-input>
                 </p>
                 <p>
-                  <ons-input id="password" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
+                  <ons-input id="login-password" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
                 </p>
+                <p id="msj-error-login"></p>
+                <p style="color: red;" id="respuesta-login"></p>
                 <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;">
-                <ons-button ripple onclick="login()">Iniciar Sesión</ons-button></p>
+                <ons-button ripple onclick="inicioSesionHandler()">Iniciar Sesión</ons-button></p>
                 <p>¿No tiene usuario?
                     <ons-button onclick="registro()" modifier="large--quiet">Registrarse</ons-button>
                 </p>
@@ -232,7 +222,6 @@
             <ons-toolbar modifier="material">
                 <div class="center">Registro de usuario</div>
             </ons-toolbar>
-
             <div style="text-align: center; margin-top: 30px;">
                 <p>
                     <ons-input id="nombre" modifier="material underbar" placeholder="Nombre" float></ons-input>
@@ -251,20 +240,19 @@
                 </p>
                
                 <p>
-                    <ons-input id="password1" modifier="material underbar" type="password" placeholder="Password"  float></ons-input>
+                    <ons-input id="password1" modifier="material underbar" type="password" placeholder="Password" float></ons-input>
                 </p>
                 <p>
-                    <ons-input id="password2" modifier="material underbar" type="password" placeholder="Repita el password"  float></ons-input>
+                    <ons-input id="password2" modifier="material underbar" type="password" placeholder="Repita el password" float></ons-input>
                 </p>
-                <p style="text-align: center; margin-top: 20px; color:#FF0000 ">El password debe tener mínimo 8 caracteres</p>
+                <p style="color: red;" id="respuesta-registro"></p>
                 <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;">
                     <ons-button ripple onclick="registrarUsuario()">Registrarse</ons-button>
                 </p>
-                <p id="mensajeVacio">probando vacios</p>
-                <p id="mensajePassword1">probando password</p>
-                <p id="mensajePassword2">probando password2</p>
-                <p id="mensajeOk">probando todo okay</p>
+                <p style="text-align: center; opacity: 0.6;">
+                    <ons-button onclick="login()" modifier="large--quiet">Volver</ons-button>
+                </p>
             </div>
         </ons-page>
 </template>
