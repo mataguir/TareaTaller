@@ -14,6 +14,26 @@ class Usuario {
     }
 }
 
+class Producto {
+    constructor(
+        pID,
+        pCodigo,
+        pNombre,
+        pPrecio,
+        pUrlImagen,
+        pEstado,
+        pEtiquetas
+    ) {
+        this.id = pID;
+        this.codigo = pCodigo;
+        this.nombre = pNombre;
+        this.precio = pPrecio
+        this.urlImagen = pUrlImagen
+        this.estado = pEstado
+        this.etiquetas = pEtiquetas
+    }
+}
+
 class Pedido {
     constructor(
         pIdProducto,
