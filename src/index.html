@@ -6,6 +6,7 @@
     <title>Taller</title>
     <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
     <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+    <link rel="stylesheet" href="estilos.css">
     <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="clases.js"></script> 
@@ -19,15 +20,14 @@
                     <ons-list-header id="menu-list-header">Usuario logueado</ons-list-header>
                     <ons-list-item onclick="irCatalogo()" tappable>Catálogo</ons-list-item>
                     <ons-list-item onclick="irFavoritos()" tappable>Favoritos</ons-list-item>
-                    <ons-list-item onclick="irPedidos()" tappable>Pedidos</ons-list-item>
+                    <ons-list-item onclick="irPedidos()" modifier="nodivider" tappable>Pedidos</ons-list-item>
+                    <ons-list-item style="margin-top: 100%;opacity: 0.8;" onclick="cerrarSesion()" tappable>Cerrar Sesion</ons-list-item>
+
                 </ons-list>
             </ons-page>
         </ons-splitter-side>
-
         <ons-splitter-content>
-
             <ons-navigator swipeable id="navigator" page="login.html"></ons-navigator>
-
         </ons-splitter-content>
 
     </ons-splitter>
@@ -47,16 +47,15 @@
                 </ons-toolbar>
                 <p style="text-align: center; opacity: 0.6; padding-top: 20px;">
                     Ve al menú para ver opciones
-                </p><br><br>
-                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
                 </p>
             </ons-page>
     </template>
 
     <template id="catalogo.html">
-       
         <ons-page>
+            <script>
+                ons.getScriptPage().onInit = mostrarProductos();
+            </script>
             <ons-toolbar>
                 <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
@@ -67,72 +66,97 @@
                     Catálogo de productos
                 </div>
             </ons-toolbar>
-            <!-- en esta div está un gif de espera mientras se carga la página -->
-            <div id="divCarga" style="text-align: center;">
-                <img src="img/minions.gif">
-                <br>
-                <div style="margin: 20px auto; width: 320px;">
-                    <h2 style="margin: 0;">Se está procesando su pedido...</h2>
-                    <ons-progress-bar indeterminate></ons-progress-bar>
-               </div>
-               
-              
-            </div>
-            <br>
-            <br>
             <div id="busquedaDeProductos" style="text-align: center;">
-            <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
-            <!-- también acá debe ir la búsequeda por código QR -->
-            <p style="text-align: center; margin-top: 20px;">
-                <ons-search-input id="txtSearch" placeholder="Buscar producto" onchange=""></ons-search-input>
-
-                <ons-button style=" margin-bottom -14px;" modifier="quiet" onclick="">
-                    <ons-icon style="font-size: 30px;  color: #2979ff;" icon="md-car"></ons-icon>
-                </ons-button>
-            </p>
-                </div>
-
-            <ons-card>
-                <div class="title">
-                    Productos seleccionados del catálogo
-                </div>
-
-                <div class="divResultados">
-                    <p>Aca deberían aparecer todos los productos llamando a la API </p>
-                   
-                        <table border="1">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Precio</th>
-                                    <th><img width="100" height="100" src="img/perrito.jpg"></th>
-                                    <th>Código</th>
-                                    <th>Etiquetas</th>
-                                    <th>Estado</th>
-                                    <th>Icono para guardar como favorito</th>
-                                    <!-- en el código se debe apretar un boton que al seleccionarlo me vaya a los detalles del producto,
-                                         supongo que es esta misma información ampliada-->
-                               </tr>
-                            </thead>
-                            <tbody id="tablaResultadosCuerpo"></tbody>
-                        </table>
-                    </div>
-
-                <br>
-                <br>
-
-                    <!-- esto lo puse porque una vez seleccionado el producto tiene que aparecer la opción de poner cantidad y comprar, hay que ver bien en dónde va -->
-                    <div>
-                        <ons-input id="inputCantidad1" modifier="underbar" placeholder="Cantidad" type="number" float></ons-input>
-                        <ons-button numero-card="1" onclick="comprar()">Comprar</ons-button>
-                    </div>
-
-                <br>
-                <br>
-                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
+                <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
+                <!-- también acá debe ir la búsequeda por código QR -->
+                <p style="text-align: center; margin-top: 20px;">
+                    <ons-search-input id="txtSearch" placeholder="Buscar producto" onchange=""></ons-search-input>
+                    <ons-button style=" margin-bottom: -14px;" modifier="quiet" onclick="">
+                        <ons-icon style="font-size: 30px;  color: darkslategray;" icon="md-car"></ons-icon>
+                    </ons-button>
                 </p>
-                </ons-card>
+            </div>
+            <ons-card style=" width: fit-content;">
+                <div class="title">Productos</div>
+                <div class="divResultados">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Etiquetas</th>
+                                <th>Estado</th>
+                                <th>Agregar a Favoritos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-resultados-productos"></tbody>
+                    </table>
+                </div>
+            </ons-card>
+        </ons-page>
+    </template>
+
+    <template id="detalle-producto.html">
+        <ons-page>
+            <ons-toolbar modifier="material">
+                <div class="center">Detalles de Producto</div>
+            </ons-toolbar>
+            <div style="text-align: center; margin-top: 30px;">
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Imagen</th>
+                            <th>Código</th>
+                            <th>Etiquetas</th>
+                            <th>Estado</th>
+                            <th>Descripción</th>
+                            <th>Puntaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-detalle-producto"></tbody>
+                </table>
+                <p style="color: red;" id="mensaje-stock"></p>
+                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
+                <p style="margin-top: 30px; display: none;" id="boton-comprar-producto">
+                    <ons-button ripple onclick="mostrarCompra()">Comprar</ons-button>
+                </p>
+                <p style="text-align: center; opacity: 0.6;">
+                    <ons-button onclick="volverACatalogo()" modifier="large--quiet">Volver</ons-button>
+                </p>
+            </div>
+        </ons-page>
+    </template>
+
+    <template id="compra.html">
+        <ons-page>
+            <script>
+                ons.getScriptPage().onInit = cargarDetallesPedido();
+            </script>
+            <ons-toolbar modifier="material">
+                <div class="center">Compra</div>
+            </ons-toolbar>
+            <div style="text-align: center; margin-top: 30px;">
+                <div style="font-weight: 600;" class="title card__title">Producto: </div>
+                <div id="nombre-producto" class="title card__title"></div>
+                <div style="font-weight: 600;" class="title card__title">Precio: </div>
+                <div id="precio-producto" class="title card__title"></div>
+                <div style="font-weight: 600;" class="title card__title">Cantidad: </div>
+                <p>
+                    <ons-input id="cantidad-compra" modifier="material underbar" type="number" placeholder="Cantidad" float></ons-input>
+                </p>
+                <p style="color: red;" id="mensaje-pedido"></p>
+                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
+                <p style="margin-top: 30px;" id="boton-realizar-pedido">
+                    <ons-button ripple onclick="realizarPedido()">Hacer Pedido</ons-button>
+                </p>
+                <p style="text-align: center; opacity: 0.6;">
+                    <ons-button onclick="volverACatalogo()" modifier="large--quiet">Volver</ons-button>
+                </p>
+            </div>
         </ons-page>
     </template>
 
@@ -157,16 +181,14 @@
 
                 </div>
             </ons-card>
-            <br>
-            <br>
-            <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
-            </p>
         </ons-page>
     </template>
 
     <template id="pedidos.html">
         <ons-page>
+            <script>
+                ons.getScriptPage().onInit = traerPedidos();
+            </script>
             <ons-toolbar>
                 <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
@@ -177,18 +199,33 @@
                     Tus pedidos
                 </div>
             </ons-toolbar>
+                <!-- en esta div está un gif de espera mientras se carga la página -->
+                <div id="divCarga" style="text-align: center;">
+                    <div style="margin: 20px auto; width: 320px;">
+                        <h2 style="margin: 0;">Se está procesando su pedido...</h2>
+                        <ons-progress-circular indeterminate></ons-progress-circular>
+                    </div>
+                </div>
             <ons-card>
                 <div class="title">
                     Tus pedidos
                 </div>
-                <div class="content">
-                    <p>Probando contenido </p>
+                <div class="divResultados">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Etiquetas</th>
+                                <th>Estado</th>
+                                <th>Sucursal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pedidos"></tbody>
+                    </table>
                 </div>
-                <br>
-                <br>
-                <p style="text-align: center; opacity: 0.6; padding-top: 100px;">
-                    <ons-button onclick="cerrarSesion()" modifier="large--quiet">Cerrar Sesion</ons-button>
-                </p>
             </ons-card>
         </ons-page>
     </template>

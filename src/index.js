@@ -12,7 +12,7 @@ let usuarioLogueado;
 let tokenGuardado;
 
 // Productos
-//const producto = [];
+let productoAComprar;
 
 let emailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
@@ -45,6 +45,7 @@ function cerrarSesion() {
     //inicializar();
     // va inicializar y no va pushpage, solo la puse para probar el boton
     myNavigator.pushPage(`login.html`);
+    cerrarMenu();
 }
 
 /*
@@ -234,13 +235,103 @@ function usuarioLogueadoErrorCallback(error) {
  * PRODUCTOS
  ******************************/
 
+function mostrarProductos() {
+    traerProductos();
+}
 
+function traerProductos() {
+    $.ajax({
+        type: 'GET',
+        url: urlBase + 'productos',
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        success: function (response) {
+            cargarProductos(response.data);
+        },
+        error: traerProductosErrorCallback
+    });
+}
+
+function traerProductosErrorCallback(error) {
+    console.log(error.responseJSON.error);
+}
+
+function cargarProductos(productos) {
+    $('#tabla-resultados-productos').html('');
+    for (let i = 0; i < productos.length; i++) {
+        $('#tabla-resultados-productos').append(`<tr onclick="detalleProducto(${i})" data-id="${productos[i]._id}"><td>${productos[i].nombre}</td><td>${productos[i].precio}</td><td>${productos[i].urlImagen}</td><td>${productos[i].codigo}</td><td>${productos[i].etiquetas}</td><td>${productos[i].estado}</td></tr>`);
+    }
+}
+function detalleProducto(e) {
+    traerUnProducto($('#tabla-resultados-productos tr').eq(e).data());
+    mostrarProducto();
+}
+
+function traerUnProducto(id) {
+    $.ajax({
+        type: 'GET',
+        url: urlBase + `productos/${id.id}`,
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        success: function (response) {
+            mostrarUnProducto(response.data);
+        },
+        error: traerUnProductoErrorCallback
+    });
+}
+
+function traerUnProductoErrorCallback(error) {
+    console.log(error.responseJSON.error);
+}
+
+function mostrarUnProducto(detalles) {
+    $('#tabla-detalle-producto').html('');
+    $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td><td>${detalles.precio}</td><td>${detalles.urlImagen}</td><td>${detalles.codigo}</td><td>${detalles.etiquetas}</td><td>${detalles.estado}</td><td>${detalles.descripcion}</td><td>${detalles.puntaje}</td></tr>`);
+    productoAComprar = detalles;
+    if (detalles.estado == 'en stock') {
+        $('#mensaje-stock').html('');
+        $('#boton-comprar-producto').show();
+    }
+    else{
+        $('#boton-comprar-producto').hide();
+        $('#mensaje-stock').html('No hay stock');
+    }
+}
 
  /******************************
  * PEDIDOS
  ******************************/
+function realizarPedido() {
+    console.log(productoAComprar);
+}
 
+function cargarDetallesPedido() {
+    $('#nombre-producto').html(`${productoAComprar.nombre}`);
+    $('#precio-producto').html(`${productoAComprar.precio}`);
+}
 
+function cargarPedidos(pedidos) {
+    $('#tabla-pedidos').html('');
+    $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td><td>${pedidos.precio}</td><td>${pedidos.urlImagen}</td><td>${pedidos.codigo}</td><td>${pedidos.etiquetas}</td><td>${pedidos.estado}</td><td>${pedidos.sucursal}</td></tr>`);
+    
+}
+
+function traerPedidos() {
+    $.ajax({
+        type: 'GET',
+        url: urlBase + `pedidos`,
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        success: function (response) {
+            cargarPedidos(response.data);
+        },
+        error: traerPedidosErrorCallback
+    });
+}
+
+function traerPedidosErrorCallback(error) {
+    console.log(error.responseJSON.error);
+}
 
  /******************************
  * FAVORITOS
@@ -269,7 +360,7 @@ function abrirMenu() {
 }
 
 function irCatalogo() {
-    myNavigator.pushPage(`catalogo.html`);
+    myNavigator.bringPageTop(`catalogo.html`);
     cerrarMenu();
 }
 
@@ -285,4 +376,16 @@ function irPedidos() {
 
 function cerrarMenu() {
        document.querySelector('#menu').close();
+}
+
+function mostrarProducto() {
+    myNavigator.bringPageTop(`detalle-producto.html`);
+}
+
+function volverACatalogo() {
+    myNavigator.bringPageTop(`catalogo.html`);
+}
+
+function mostrarCompra() {
+    myNavigator.bringPageTop(`compra.html`);
 }
