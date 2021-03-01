@@ -14,13 +14,30 @@ let tokenGuardado;
 // Productos
 let productoAComprar;
 
-//mapa
-let posicionDelUsuario;
-let miMapa;
-
 let emailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
+// Callbacks para el device ready de Cordova y en el de Onsen.
+document.addEventListener("deviceready", onDeviceReady, false);
+
 ons.ready(todoCargado);
+
+// Le decimos qué hacer cuando el dispositivo se queda sin internet.
+document.addEventListener(
+    "offline",
+    function () {
+        myNavigator.pushPage("offline.html");
+    },
+    false
+);
+
+// Le decimos qué hacer cuando el dispositivo vuelve a tener acceso a internet.
+document.addEventListener(
+    "online",
+    function () {
+        myNavigator.popPage();
+    },
+    false
+);
 
 function todoCargado() {
     myNavigator = document.querySelector('#navigator');
@@ -29,6 +46,10 @@ function todoCargado() {
     $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
 }
+
+//mapa
+let posicionDelUsuario;
+let miMapa;
 
 function inicializar() {
     // Chequeo si en el localStorage hay token guardado.
@@ -502,7 +523,6 @@ function mostrarCompra() {
     myNavigator.bringPageTop(`compra.html`);
 }
 
-
 /******************************
  * MAPAS Y UBICACION
  ******************************/
@@ -527,6 +547,8 @@ function cargarPosicionDelUsuario() {
         }
     )
 }
+
+
 
 function inicializarMapa() {
     // Guardo referencia global a mi mapa.
@@ -594,3 +616,114 @@ function dibujarDistancia(lat, lon) {
     miMapa.fitBounds(polyline.getBounds());
 }
 
+/******************************
+ * QR
+ ******************************/
+
+function onDeviceReady() {
+    // Pido permisos para usar la camara.
+    QRScanner.prepare(prepareCallback);
+}
+
+//let token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDMxNzc5ODY3YzZlMzE1M2I2YzlkMzciLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNjEzODU0NjE2fQ.w55R4V-N93O3v1IHgzHKtmw-oBwy9gtaOSVkx8mPmj0';
+
+function prepareCallback(err, status) {
+    if (err) {
+        // En caso de cualquier tipo de error.
+        ons.notification.alert(JSON.stringify(err));
+    }
+    if (status.authorized) {
+        // Tenemos acceso y el escaner está inicializado.
+    } else if (status.denied) {
+        // El usuario rechazó el pedido, la pantalla queda en negro.
+        ons.notification.alert('status.denied');
+        // Podemos volver a preguntar mandando al usuario a la configuración de permisos con QRScanner.openSettings().
+    } else {
+        // Nos rechazaron solo por esta vez. Podríamos volver a hacer el pedido.
+        ons.notification.toast("Nos cancelaron una sola vez", { timeout: 2000 });
+    }
+}
+
+// Función que me lleva a la pantalla de escaneo.
+function irAlScan() {
+    myNavigator.pushPage("qrPage.html");
+}
+
+// Función que se dispara al ingresar a la página de escaneo.
+function escanear() {
+    // Si hay scanner
+    if (window.QRScanner) {
+        // Esto lo uso para mostrar la cam en la app.
+        // Por defecto la vista previa queda por encima del body y el html.
+        // Pero por un tema de compatibilidad con Onsen, queda por debajo de la page.
+        // Mirar el css y ver cómo hay que hacer que esta page sea transparente para que se vea la cámara.
+        window.QRScanner.show(
+            function (status) {
+                // Función de scan y su callback
+                window.QRScanner.scan(scanCallback);
+            }
+        );
+    }
+}
+
+function scanCallback(err, text) {
+    if (err) {
+        // Ocurrió un error o el escaneo fue cancelado(error code '6').
+        ons.notification.alert(JSON.stringify(err));
+    } else {
+        // Si no hay error escondo el callback y vuelvo a la pantalla anterior pasando el string que se escaneó con la url del producto.
+        QRScanner.hide();
+        myNavigator.popPage({ data: { scanText: text } });
+    }
+}
+
+// Si hay algo escaneado trae el producto y lo muestra
+function cargarBusquedaQr() {
+    // Si me pasaron datos por parámetro en la navegación.
+    // Hacer this.data es lo mismo que hacer myNavigator.topPage.data
+    if (this.data && this.data.scanText) {
+        ons.notification.alert(this.data.scanText);
+        $.ajax({
+            type: "GET",
+            url: this.data.scanText,
+            contentType: "application/json",
+            beforeSend: function(req) {
+                req.setRequestHeader('x-auth', tokenGuardado)
+            },
+            success: function (responseBody) {
+                ons.notification.toast("success", { timeout: 1500 });
+                let r = responseBody.data[0];
+                ons.notification.toast(JSON.stringify(r), { timeout: 5000 });
+                let stringHtml =
+                `
+                <ons-list-item>
+                    <div class="left">
+                        <img class="list-item__thumbnail" src="http://ec2-54-210-28-85.compute-1.amazonaws.com:3000/assets/imgs/${r.urlImagen}.jpg">
+                    </div>
+                    <div class="center">
+                        <span class="list-item__title">${r.nombre}</span>
+                        <span class="list-item__subtitle">${r.etiquetas.join(',')}</span>
+                    </div>
+                    <div class="right">
+                        <span class="list-item__title">$${r.precio}</span>
+                    </div>
+                </ons-list-item>
+                `;
+                
+                $('#productos-list').html(stringHtml);
+            },
+            error: errorCallBack
+        });
+    }
+}  
+
+// Función de callback de error ajax.
+function errorCallBack(resp) {
+    console.log(resp);
+    // Si el status es 401 quiere decir que no estoy autorizado.
+    if (resp.status === 401) {
+        ons.notification.alert("Usuario no autorizado");
+    } else {
+        ons.notification.alert(resp.responseJSON.error);
+    }
+}

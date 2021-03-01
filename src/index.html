@@ -14,6 +14,7 @@
     <!-- Importo los archivos necesario para poder utilizar la librería de mapas -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+    <script src="cordova.js"></script>
 </head>
 <body>
     <ons-splitter>
@@ -58,6 +59,7 @@
         <ons-page>
             <script>
                 ons.getScriptPage().onInit = mostrarProductos();
+                ons.getScriptPage().onShow = cargarBusquedaQr();
             </script>
             <ons-toolbar>
                 <div class="right">
@@ -71,13 +73,21 @@
             </ons-toolbar>
             <div id="busquedaDeProductos" style="text-align: center;">
                 <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
-                <!-- también acá debe ir la búsequeda por código QR -->
                 <p style="text-align: center; margin-top: 20px;">
                     <ons-search-input id="buscar-producto" placeholder="Buscar producto" onkeyup="buscar(this.value)"></ons-search-input>
-                    <ons-button style=" margin-bottom: -14px;" modifier="quiet" onclick="">
+                    <ons-button style=" margin-bottom -14px;" modifier="quiet" onclick="">
                         <ons-icon style="font-size: 30px;  color: darkslategray;" icon="md-camera"></ons-icon>
                     </ons-button>
                 </p>
+            </div>
+            <!-- Búsqueda por código QR -->
+            <div style="margin: 2% 5%">
+                <p style="text-align: center; margin-top: 20px;"> Buscar producto por código QR
+                    <ons-button onclick="irAlScan()">Escanear</ons-button>
+                </p>
+                
+                <br>
+                <ons-list id="productos-list"></ons-list>
             </div>
             <ons-card style=" width: fit-content;">
                 <div class="title">Productos</div>
@@ -101,7 +111,38 @@
         </ons-page>
     </template>
 
-    <template id="detalle-producto.html">
+    <template id="qrPage.html">
+        <ons-page id="qrPage">
+            <script>
+                    // Script para lanzar la función de scanear.
+                    ons.getScriptPage().onInit = escanear;
+                    // Sobrescribo el back button para esconder el escaner y mandar a la pantalla anterior el valor ''.
+                    document.querySelector('ons-back-button').onClick = function(event) {
+                        if(window.QRScanner) {
+                            QRScanner.hide();
+                        }
+                        myNavigator.popPage({data: {scanText: ''}});
+                    };
+            </script>
+            <ons-toolbar>
+                <div class="left">
+                    <ons-back-button></ons-back-button>
+                </div>
+                <div class="center">Scan</div>
+            </ons-toolbar>
+        </ons-page>
+    </template>
+
+       <template id="offline.html">
+        <ons-page id="offline">
+            <div style="height: 100%; display: flex;">
+                <img src="img/no-internet.png" style="width: 75%; display: block; margin: auto;">
+              FALTA ESTA IMAGEN
+            </div>
+        </ons-page>
+    </template>
+
+        <template id="detalle-producto.html">
         <ons-page>
             <ons-toolbar modifier="material">
                 <div class="center">Detalles de Producto</div>
