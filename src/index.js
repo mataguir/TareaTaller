@@ -13,17 +13,24 @@ let tokenGuardado;
 
 // Productos
 let productoAComprar;
-
 let emailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 ons.ready(todoCargado);
 
-//document.querySelector('ons-input').blur() evento al salir del focus del input
-
 function todoCargado() {
     myNavigator = document.querySelector('#navigator');
+    cargarPosicionDelUsuario();
+    $("#btnDibujarPosicionDelUsuario").click(btnDibujarPosicionDelUsuarioHandler);
+    $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
 }
+
+/******************************
+ * Variables globales del mapa
+ ******************************/
+
+let posicionDelUsuario;
+let miMapa;
 
 function inicializar() {
     // Chequeo si en el localStorage hay token guardado.
@@ -256,10 +263,15 @@ function traerProductosErrorCallback(error) {
     console.log(error.responseJSON.error);
 }
 
+//Esta tabla muestra todos los productos
+// Tiene el boton de agregar a favoritos
 function cargarProductos(productos) {
     $('#tabla-resultados-productos').html('');
     for (let i = 0; i < productos.length; i++) {
-        $('#tabla-resultados-productos').append(`<tr onclick="detalleProducto(${i})" data-id="${productos[i]._id}"><td>${productos[i].nombre}</td><td>${productos[i].precio}</td><td>${productos[i].urlImagen}</td><td>${productos[i].codigo}</td><td>${productos[i].etiquetas}</td><td>${productos[i].estado}</td></tr>`);
+        $('#tabla-resultados-productos').append(`<tr onclick="detalleProducto(${i})" data-id="${productos[i]._id}"><td>${productos[i].nombre}</td><td>${productos[i].precio}</td><td>${productos[i].urlImagen}</td><td>${productos[i].codigo}</td><td>${productos[i].etiquetas}</td><td>${productos[i].estado}</td>
+                                     <td><input type="button" value="AGREGAR"></td> /tr>`);
+        /*    <td><input class="btnProductoFavorito" id="${productos[i]._id} type="button" value="${obtenerNombreBotonFavorito(unProductoObjeto)}"></td>*/
+
     }
 }
 function detalleProducto(e) {
@@ -286,7 +298,8 @@ function traerUnProductoErrorCallback(error) {
 
 function mostrarUnProducto(detalles) {
     $('#tabla-detalle-producto').html('');
-    $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td><td>${detalles.precio}</td><td>${detalles.urlImagen}</td><td>${detalles.codigo}</td><td>${detalles.etiquetas}</td><td>${detalles.estado}</td><td>${detalles.descripcion}</td><td>${detalles.puntaje}</td></tr>`);
+    $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td><td>${detalles.precio}</td><td>${detalles.urlImagen}</td><td>${detalles.codigo}</td><td>${detalles.etiquetas}</td><td>${detalles.estado}</td><td>${detalles.descripcion}</td><td>${detalles.puntaje}<td>
+</tr>`);
     productoAComprar = detalles;
     if (detalles.estado == 'en stock') {
         $('#mensaje-stock').html('');
@@ -336,8 +349,78 @@ function traerPedidosErrorCallback(error) {
  /******************************
  * FAVORITOS
  ******************************/
+/* function crearPedido(){
+ let unProductoObjeto = new Pedido()
+
+               <tr> 
+                     <td><input class="btnProductoFavorito" Id="${unPedidoObjeto.idProducto}" type="button" value="${obtenerNombreBotonFavorito(unProductoObjeto)}">
+                     </td>
+                </tr>
+           }
+           
+            $(".btnProductoFavorito").click(btnProductoFavoritoHandler) ;
+          
+}
+*/
+
+// Función que revisa si el producto está o no en favoritos para ver qué texto ponerle al botón.
+function obtenerNombreBotonFavorito(producto) {
+    let nombreBoton = "Agregar";
+    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
+    let favoritosJSON = null;
+    if (favoritosLocalStorage) {
+        favoritosJSON = JSON.parse(favoritosLocalStorage);
+        let i = 0;
+        let encontrada = false;
+        while (!encontrada && i < favoritosJSON.length) {
+            let unFavorito = favoritosJSON[i];
+            if (unFavorito.idProducto === producto.idProducto) {
+                encontrada = true;
+                nombreBoton = "Sacar";
+            }
+            i++;
+        }
+    }
+    return nombreBoton;
+}
 
 
+// Revisa si el producto está o no en favoritos y la elimina o agrega según corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
+function btnProductoFavoritoHandler() {
+    let productoId = $(this).attr("productoId");
+    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
+    let favoritosJSON = null;
+    let producto = obtenerProductoPorID(productoId);
+    if (favoritosLocalStorage) {
+        favoritosJSON = JSON.parse(favoritosLocalStorage);
+        let i = 0;
+        let encontrada = false;
+        while (!encontrada && i < favoritosJSON.length) {
+            let unFavorito = favoritosJSON[i];
+            if (unFavorito.idProducto === productoId) {
+                encontrada = true;
+                // Elimino la receta del array de favoritos
+                favoritosJSON.splice(i, 1);
+            }
+            i++;
+        }
+        // Si no encontré la receta entre los favoritos, la agrego.
+        if (!encontrada) {
+            if (producto) {
+                favoritosJSON.push(producto);
+            }
+        }
+    } else {
+        // Si no tenía ningún favorito en localStorage, agrego la receta en cuestión.
+        if (producto) {
+            favoritosJSON = [producto];
+
+        }
+    }
+    // Actualizo mis favoritos en el localStorage.
+    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(favoritosJSON));
+    mostrarHome();
+}
 
 /******************************
  * PANTALLAS
@@ -389,3 +472,96 @@ function volverACatalogo() {
 function mostrarCompra() {
     myNavigator.bringPageTop(`compra.html`);
 }
+
+
+/******************************
+ * MAPAS Y UBICACION
+ ******************************/
+function cargarPosicionDelUsuario() {
+
+    window.navigator.geolocation.getCurrentPosition(
+        // Callback de éxito.
+        function (pos) {
+            posicionDelUsuario = {
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude
+            }
+            inicializarMapa();
+        },
+        // Calback de error.
+        function () {
+            posicionDelUsuario = {
+                latitude: -34.903816878014354,
+                longitude: -56.19059048108193
+            }
+            inicializarMapa();
+        }
+    )
+}
+
+function inicializarMapa() {
+    // Guardo referencia global a mi mapa.
+    miMapa = L.map("contenedorDeMapa").setView([posicionDelUsuario.latitude, posicionDelUsuario.longitude], 13);
+
+    // Vacío el mapa.
+    miMapa.eachLayer(m => m.remove());
+
+    // Dibujo la cartografía base.
+    L.tileLayer(
+        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWNhaWFmYSIsImEiOiJjanh4cThybXgwMjl6M2RvemNjNjI1MDJ5In0.BKUxkp2V210uiAM4Pd2YWw",
+        {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            id: "mapbox/streets-v11",
+            accessToken: "your.mapbox.access.token"
+        }
+    ).addTo(miMapa);
+}
+
+function btnDibujarPosicionDelUsuarioHandler() {
+    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicación del usuario').openPopup();
+    miMapa.panTo(new L.LatLng(posicionDelUsuario.latitude, posicionDelUsuario.longitude));
+}
+
+function btnBuscarDireccionHandler() {
+    const direccionBuscada = $("#inputDireccionBuscada").val();
+    buscarDireccion(direccionBuscada);
+}
+
+// Función que usa la API de OpenStreetMap para buscar las coordenadas de una dirección.
+function buscarDireccion(direccionBuscada) {
+    $.ajax({
+        type: 'GET',
+        url: `https://nominatim.openstreetmap.org/search?format=json&q=${direccionBuscada}, Uruguay`,
+        contentType: "application/json",
+        success: function (data) {
+            if (data.length > 0) {
+                // L.marker([data[0].lat, data[0].lon]).addTo(miMapa).bindPopup(direccionBuscada);
+                // miMapa.panTo(new L.LatLng(data[0].lat, data[0].lon));
+                dibujarDistancia(data[0].lat, data[0].lon);
+            } else {
+                alert("No se han encontrado datos");
+            }
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+// Función que se encarga de dibujar un punto en el mapa y agregar una una línea desde la posición del usuario hasta el punto dibujado.
+function dibujarDistancia(lat, lon) {
+    // Dibujo el punto en el mapa.
+    L.marker([lat, lon]).addTo(miMapa);
+    // Array con los puntos del mapa que voy a usar para la línea.
+    const puntosLinea = [
+        [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
+        [lat, lon]
+    ];
+    // Calculo la distancia usando la librería. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
+    const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
+    // Dibujo una línea amarilla con un pop up mostrando la distancia.
+    const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
+    // Centro el mapa en la línea.
+    miMapa.fitBounds(polyline.getBounds());
+}
+
