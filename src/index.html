@@ -73,9 +73,9 @@
                 <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
                 <!-- también acá debe ir la búsequeda por código QR -->
                 <p style="text-align: center; margin-top: 20px;">
-                    <ons-search-input id="txtSearch" placeholder="Buscar producto" onchange=""></ons-search-input>
+                    <ons-search-input id="buscar-producto" placeholder="Buscar producto" onkeyup="buscar(this.value)"></ons-search-input>
                     <ons-button style=" margin-bottom: -14px;" modifier="quiet" onclick="">
-                        <ons-icon style="font-size: 30px;  color: darkslategray;" icon="md-car"></ons-icon>
+                        <ons-icon style="font-size: 30px;  color: darkslategray;" icon="md-camera"></ons-icon>
                     </ons-button>
                 </p>
             </div>
@@ -241,7 +241,7 @@
             </div>
             <br><br>
             <!-- Div donde se dibujará nuestro mapa -->
-            <div id="contenedorDeMapa" style="width: 100%; height: 500px;"></div>
+            <div id="contenedor-mapa" style="width: 100%; height: 500px;"></div>
         </ons-page>
     </template>
 
