@@ -11,6 +11,9 @@
     <script type="text/javascript" src="jquery.js"></script>
     <script type="text/javascript" src="clases.js"></script> 
     <script type="text/javascript" src="index.js"></script>
+    <!-- Importo los archivos necesario para poder utilizar la librería de mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
 </head>
 <body>
     <ons-splitter>
@@ -226,7 +229,19 @@
                         <tbody id="tabla-pedidos"></tbody>
                     </table>
                 </div>
+                
             </ons-card>
+            <!-- En esta div hay botones para pedir ubicación en el mapa del usuario y mostrar las sucursales -->
+            <br><br>
+            <div>
+                <input type="button" value="Buscar posición del usuario" id="btnDibujarPosicionDelUsuario">
+                <br><br>
+                <input type="text" placeholder="Dirección buscada" id="inputDireccionBuscada">
+                <input type="button" value="Buscar" id="btnBuscarDireccion">
+            </div>
+            <br><br>
+            <!-- Div donde se dibujará nuestro mapa -->
+            <div id="contenedorDeMapa" style="width: 100%; height: 500px;"></div>
         </ons-page>
     </template>
 
