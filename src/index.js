@@ -13,6 +13,11 @@ let tokenGuardado;
 
 // Productos
 let productoAComprar;
+
+//mapa
+let posicionDelUsuario;
+let miMapa;
+
 let emailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
 ons.ready(todoCargado);
@@ -24,13 +29,6 @@ function todoCargado() {
     $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
 }
-
-/******************************
- * Variables globales del mapa
- ******************************/
-
-let posicionDelUsuario;
-let miMapa;
 
 function inicializar() {
     // Chequeo si en el localStorage hay token guardado.
@@ -311,6 +309,37 @@ function mostrarUnProducto(detalles) {
     }
 }
 
+function buscar(entrada) {
+    let nombres = $('.nombre-producto');
+    let etiquetas = $('.etiquetas-producto');
+
+    nombres.parent().hide();
+
+    for (let i = 0; i < nombres.length; i++) {
+        let nombre = nombres.eq(i).html().toLowerCase();
+        if (nombre.indexOf(entrada.toLowerCase()) != -1) {
+            nombres.eq(i).parent().show();
+        }
+
+        elemAMostrar = buscarEtiquetas(etiquetas.eq(i), entrada);
+        if (elemAMostrar) {
+            elemAMostrar.show();
+        }
+    }
+}
+
+function buscarEtiquetas(etiqueta, param) {
+
+    let arrayEtiquetas = etiqueta.html().split(",")
+
+    for (let j = 0; j < arrayEtiquetas.length; j++) {
+        if (arrayEtiquetas[j].indexOf(param.toLowerCase()) != -1) {//si lo encuentra
+            return etiqueta.parent();
+        }
+    }
+    return false;
+}
+
  /******************************
  * PEDIDOS
  ******************************/
@@ -363,7 +392,7 @@ function traerPedidosErrorCallback(error) {
 }
 */
 
-// Función que revisa si el producto está o no en favoritos para ver qué texto ponerle al botón.
+// Funciï¿½n que revisa si el producto estï¿½ o no en favoritos para ver quï¿½ texto ponerle al botï¿½n.
 function obtenerNombreBotonFavorito(producto) {
     let nombreBoton = "Agregar";
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
@@ -385,7 +414,7 @@ function obtenerNombreBotonFavorito(producto) {
 }
 
 
-// Revisa si el producto está o no en favoritos y la elimina o agrega según corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
+// Revisa si el producto estï¿½ o no en favoritos y la elimina o agrega segï¿½n corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
 function btnProductoFavoritoHandler() {
     let productoId = $(this).attr("productoId");
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
@@ -404,14 +433,14 @@ function btnProductoFavoritoHandler() {
             }
             i++;
         }
-        // Si no encontré la receta entre los favoritos, la agrego.
+        // Si no encontrï¿½ la receta entre los favoritos, la agrego.
         if (!encontrada) {
             if (producto) {
                 favoritosJSON.push(producto);
             }
         }
     } else {
-        // Si no tenía ningún favorito en localStorage, agrego la receta en cuestión.
+        // Si no tenï¿½a ningï¿½n favorito en localStorage, agrego la receta en cuestiï¿½n.
         if (producto) {
             favoritosJSON = [producto];
 
@@ -480,7 +509,7 @@ function mostrarCompra() {
 function cargarPosicionDelUsuario() {
 
     window.navigator.geolocation.getCurrentPosition(
-        // Callback de éxito.
+        // Callback de ï¿½xito.
         function (pos) {
             posicionDelUsuario = {
                 latitude: pos.coords.latitude,
@@ -501,16 +530,16 @@ function cargarPosicionDelUsuario() {
 
 function inicializarMapa() {
     // Guardo referencia global a mi mapa.
-    miMapa = L.map("contenedorDeMapa").setView([posicionDelUsuario.latitude, posicionDelUsuario.longitude], 13);
+    miMapa = L.map("contenedor-mapa").setView([posicionDelUsuario.latitude, posicionDelUsuario.longitude], 13);
 
-    // Vacío el mapa.
+    // Vacï¿½o el mapa.
     miMapa.eachLayer(m => m.remove());
 
-    // Dibujo la cartografía base.
+    // Dibujo la cartografï¿½a base.
     L.tileLayer(
         "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWNhaWFmYSIsImEiOiJjanh4cThybXgwMjl6M2RvemNjNjI1MDJ5In0.BKUxkp2V210uiAM4Pd2YWw",
         {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery ï¿½ <a href="https://www.mapbox.com/">Mapbox</a>',
             id: "mapbox/streets-v11",
             accessToken: "your.mapbox.access.token"
         }
@@ -518,7 +547,7 @@ function inicializarMapa() {
 }
 
 function btnDibujarPosicionDelUsuarioHandler() {
-    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicación del usuario').openPopup();
+    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicaciï¿½n del usuario').openPopup();
     miMapa.panTo(new L.LatLng(posicionDelUsuario.latitude, posicionDelUsuario.longitude));
 }
 
@@ -527,7 +556,7 @@ function btnBuscarDireccionHandler() {
     buscarDireccion(direccionBuscada);
 }
 
-// Función que usa la API de OpenStreetMap para buscar las coordenadas de una dirección.
+// Funciï¿½n que usa la API de OpenStreetMap para buscar las coordenadas de una direcciï¿½n.
 function buscarDireccion(direccionBuscada) {
     $.ajax({
         type: 'GET',
@@ -548,20 +577,20 @@ function buscarDireccion(direccionBuscada) {
     });
 }
 
-// Función que se encarga de dibujar un punto en el mapa y agregar una una línea desde la posición del usuario hasta el punto dibujado.
+// Funciï¿½n que se encarga de dibujar un punto en el mapa y agregar una una lï¿½nea desde la posiciï¿½n del usuario hasta el punto dibujado.
 function dibujarDistancia(lat, lon) {
     // Dibujo el punto en el mapa.
     L.marker([lat, lon]).addTo(miMapa);
-    // Array con los puntos del mapa que voy a usar para la línea.
+    // Array con los puntos del mapa que voy a usar para la lï¿½nea.
     const puntosLinea = [
         [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
         [lat, lon]
     ];
-    // Calculo la distancia usando la librería. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
+    // Calculo la distancia usando la librerï¿½a. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
     const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
-    // Dibujo una línea amarilla con un pop up mostrando la distancia.
+    // Dibujo una lï¿½nea amarilla con un pop up mostrando la distancia.
     const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
-    // Centro el mapa en la línea.
+    // Centro el mapa en la lï¿½nea.
     miMapa.fitBounds(polyline.getBounds());
 }
 
