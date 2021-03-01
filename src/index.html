@@ -186,6 +186,9 @@
 
     <template id="pedidos.html">
         <ons-page>
+            <script>
+                ons.getScriptPage().onInit = traerPedidos();
+            </script>
             <ons-toolbar>
                 <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
@@ -207,8 +210,21 @@
                 <div class="title">
                     Tus pedidos
                 </div>
-                <div class="content">
-                    <p>Probando contenido </p>
+                <div class="divResultados">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Etiquetas</th>
+                                <th>Estado</th>
+                                <th>Sucursal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pedidos"></tbody>
+                    </table>
                 </div>
             </ons-card>
         </ons-page>

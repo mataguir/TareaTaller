@@ -310,6 +310,28 @@ function cargarDetallesPedido() {
     $('#precio-producto').html(`${productoAComprar.precio}`);
 }
 
+function cargarPedidos(pedidos) {
+    $('#tabla-pedidos').html('');
+    $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td><td>${pedidos.precio}</td><td>${pedidos.urlImagen}</td><td>${pedidos.codigo}</td><td>${pedidos.etiquetas}</td><td>${pedidos.estado}</td><td>${pedidos.sucursal}</td></tr>`);
+    
+}
+
+function traerPedidos() {
+    $.ajax({
+        type: 'GET',
+        url: urlBase + `pedidos`,
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        success: function (response) {
+            cargarPedidos(response.data);
+        },
+        error: traerPedidosErrorCallback
+    });
+}
+
+function traerPedidosErrorCallback(error) {
+    console.log(error.responseJSON.error);
+}
 
  /******************************
  * FAVORITOS
