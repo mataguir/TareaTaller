@@ -66,7 +66,7 @@ function inicializar() {
 }
 
 function cerrarSesion() {
-    window.localStorage.clear();
+    window.localStorage.removeItem('APPObligatorioToken');
     //inicializar();
     // va inicializar y no va pushpage, solo la puse para probar el boton
     myNavigator.pushPage(`login.html`);
@@ -431,11 +431,24 @@ function traerPedidosErrorCallback(error) {
 }
 */
 
-function listadoFavoritos() {
+function devolverProdFavoritoDeUsuarioLogueado() {
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
     let favoritosJSON = null;
     if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
         favoritosJSON = JSON.parse(favoritosLocalStorage);
+        for (let i = 0; i < favoritosJSON.length; i++) {
+            if (favoritosJSON[i].usuario.email == usuarioLogueado.email) {
+                return favoritosJSON[i].favoritos;
+            }
+        }
+    }
+}
+
+function listadoFavoritos() {
+    let favoritos = devolverProdFavoritoDeUsuarioLogueado();
+    let favoritosJSON = null;
+    if (favoritos && favoritos != 'null') {
+        favoritosJSON = favoritos;
         listarFavoritos(favoritosJSON);
     }
 }
@@ -454,12 +467,31 @@ function listarFavoritos(favoritos) {
 }
 
 function quitarFavorito(param) {
+    let arrayUsuarioFav = JSON.parse(window.localStorage.getItem("APPProductosFavoritos"));
     let filaAQuitar = $('.quitar-favoritos').eq(param).parent().parent();
-    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
-    favoritosJSON = JSON.parse(favoritosLocalStorage);
-    favoritosJSON.splice(param, 1);
-    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(favoritosJSON));
+    let favoritos = devolverProdFavoritoDeUsuarioLogueado();
+    let idFavAQuitar = favoritos[param]._id;
+    favoritos.splice(param, 1);
+    for (let i = 0; i < arrayUsuarioFav.length; i++) {
+        if (arrayUsuarioFav[i].usuario.email == usuarioLogueado.email) {
+            arrayUsuarioFav[i].favoritos = favoritos;
+        }
+    }
+    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(arrayUsuarioFav));
     filaAQuitar.hide();
+    quitarFavoritoDelCatalogo(idFavAQuitar);
+}
+
+function quitarFavoritoDelCatalogo(id) {
+    let filas = $('#tabla-resultados-productos tr');
+    let favAQuitar;
+    for (let i = 0; i < filas.length; i++) {
+        if (id == filas.eq(i).data().id) {
+            favAQuitar = filas.eq(i).find('.agregar-favoritos')
+        }
+    }
+    favAQuitar.removeClass();
+    favAQuitar.addClass('agregar-favoritos fa fa-heart-o');
 }
 
 function cargarIconosFavoritos() {
@@ -467,7 +499,7 @@ function cargarIconosFavoritos() {
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
     let favoritosJSON = null;
     if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
-        favoritosJSON = JSON.parse(favoritosLocalStorage);
+        favoritosJSON = devolverProdFavoritoDeUsuarioLogueado();
         for (let i = 0; i < iconos.length; i++) {
             for (let j = 0; j < favoritosJSON.length; j++) {
                 if (favoritosJSON[j]._id === iconos.eq(i).parent().parent().data().id) {
@@ -490,35 +522,36 @@ function cambiarIconoFavoritos(icono) {
     }
 }
 
-// Revisa si el producto esta o no en favoritos y la elimina o agrega segun corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
 function agregarFavorito(prod, icono) {
-    let producto = prod;
+    let objUsuarioFav = {usuario: usuarioLogueado, favoritos: [prod]};
+    let arrayUsuarioFav = []
     let productoId = prod._id;
-    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
-    let favoritosJSON = null;
-    if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
-        favoritosJSON = JSON.parse(favoritosLocalStorage);
+    let favoritos = devolverProdFavoritoDeUsuarioLogueado();   
+    if (favoritos && favoritos != 'null') {
+        arrayUsuarioFav = JSON.parse(window.localStorage.getItem("APPProductosFavoritos"));
         let encontrada = false;
-        for (let i = 0; i < favoritosJSON.length; i++) {
-            if (favoritosJSON[i]._id === productoId) {
-                encontrada = true;
-                // Elimino la receta del array de favoritos
-                favoritosJSON.splice(i, 1);
+        for (let i = 0; i < arrayUsuarioFav.length; i++) {
+            for (let j = 0; j < arrayUsuarioFav[i].favoritos.length; j++) {
+                if (arrayUsuarioFav[i].favoritos[j]._id == productoId) {
+                    // Elimino la receta del array de favoritos
+                    arrayUsuarioFav[i].favoritos.splice(j, 1);
+                    encontrada = true;
+                }
             }
         }
         if (!encontrada) {
-            if (producto) {
-                favoritosJSON.push(producto);
+            for (let i = 0; i < arrayUsuarioFav.length; i++) {
+                if (arrayUsuarioFav[i].usuario.email == usuarioLogueado.email){
+                    arrayUsuarioFav[i].favoritos.push(prod)
+                } 
             }
         }
     } else {
-        // Si no tenia ningun favorito en localStorage, agrego la receta en cuestion.
-        if (producto) {
-            favoritosJSON = [producto];
-        }
+        // Si no tenia ningun favorito en localStorage, agrego a favoritos
+        arrayUsuarioFav.push(objUsuarioFav);
     }
     // Actualizo mis favoritos en el localStorage.
-    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(favoritosJSON));
+    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(arrayUsuarioFav));
     cambiarIconoFavoritos(icono);
 }
 
@@ -567,6 +600,7 @@ function irCatalogo() {
 }
 
 function irFavoritos() {
+    myNavigator.insertPage(`catalogo.html`);
     myNavigator.bringPageTop(`favoritos.html`);
     listadoFavoritos();
     cerrarMenu();
