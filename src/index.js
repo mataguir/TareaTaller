@@ -6,6 +6,7 @@ let myNavigator;
 
 // API
 const urlBase = 'http://ec2-54-210-28-85.compute-1.amazonaws.com:3000/api/';
+const urlImagen = 'http://ec2-54-210-28-85.compute-1.amazonaws.com:3000/assets/imgs/';
 
 // Sesion
 let usuarioLogueado;
@@ -14,7 +15,11 @@ let tokenGuardado;
 // Productos
 let productoAComprar;
 
-let emailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+// Sucursales
+let sucursales ;
+
+//Expresión regular para chequear el mail
+const emailformat = /^(?:([.!#$%&'*+-/=?^_`])(?!\1+))*([\w-éüîñçè我買二ノ宮संपर्क日本]+(?:([.!#$%&'*+-/=?^_`;])(?!\3+)[\w-éüîñçè我買二ノ宮संपर्क日本]*)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,20}(?:\.[a-z]{2})?)$/i;
 
 // Callbacks para el device ready de Cordova y en el de Onsen.
 document.addEventListener("deviceready", onDeviceReady, false);
@@ -112,7 +117,6 @@ function enviarLogin(datosUsuario) {
 function verificarLogin() {
     let emailUsuario = $('#login-email').val();
     let passwordUsuario = $('#login-password').val();
-
     if (emailUsuario != '' && passwordUsuario != '') {
 
         if (emailformat.test(emailUsuario)) {
@@ -289,7 +293,7 @@ function cargarProductos(productos) {
         $('#tabla-resultados-productos').append(`<tr data-id="${productos[i]._id}">
         <td class="nombre-producto" onclick="detalleProducto(${i})">${productos[i].nombre}</td>
         <td onclick="detalleProducto(${i})">${productos[i].precio}</td>
-        <td onclick="detalleProducto(${i})">${productos[i].urlImagen}</td>
+        <td onclick="detalleProducto(${i})"><img src="${urlImagen+productos[i].urlImagen}.jpg" width="100" height="100"></td>
         <td onclick="detalleProducto(${i})">${productos[i].codigo}</td>
         <td class="etiquetas-producto" onclick="detalleProducto(${i})">${productos[i].etiquetas}</td>
         <td onclick="detalleProducto(${i})">${productos[i].estado}</td>
@@ -324,7 +328,7 @@ function mostrarUnProducto(detalles) {
     $('#tabla-detalle-producto').html('');
     $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td>
     <td>${detalles.precio}</td>
-    <td>${detalles.urlImagen}</td>
+    <td><img src="${urlImagen+detalles.urlImagen}.jpg" width="100" height="100"></td>
     <td>${detalles.codigo}</td>
     <td>${detalles.etiquetas}</td>
     <td>${detalles.estado}</td>
@@ -384,13 +388,14 @@ function realizarPedido() {
 function cargarDetallesPedido() {
     $('#nombre-producto').html(`${productoAComprar.nombre}`);
     $('#precio-producto').html(`${productoAComprar.precio}`);
+    cargarSucursales();
 }
 
 function cargarPedidos(pedidos) {
     $('#tabla-pedidos').html('');
     $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td>
     <td>${pedidos.precio}</td>
-    <td>${pedidos.urlImagen}</td>
+    <td><img src="${urlImagen+pedidos.urlImagen}.jpg" width="100" height="100"></td>
     <td>${pedidos.codigo}</td>
     <td>${pedidos.etiquetas}</td>
     <td>${pedidos.estado}</td>
@@ -459,7 +464,7 @@ function listarFavoritos(favoritos) {
         $('#tabla-favoritos').append(`<tr data-id="${favoritos[i]._id}">
         <td class="nombre-producto"">${favoritos[i].nombre}</td>
         <td>${favoritos[i].precio}</td>
-        <td>${favoritos[i].urlImagen}</td>
+        <td><img src="${urlImagen+favoritos[i].urlImagen}.jpg" width="100" height="100"></td>
         <td>${favoritos[i].codigo}</td>
         <td>${favoritos[i].estado}</td>
         <td style="text-align: center;"><i style="font-size: 35px;color: red;" onclick="quitarFavorito(${i})" class="quitar-favoritos fas fa-times-circle"></i></td>`);
@@ -574,6 +579,15 @@ function obtenerProdConIdErrorCallback(error) {
     console.log(error.responseJSON.error);
 }
 
+function mostrarSucursales(response) {
+    console.log(response.data)
+    debugger
+    $('#select-sucursal').html('')
+    for (let i = 0; i < response.data.length; i++) {
+        $('#select-sucursal').append(`<option value=${response.data[i].id}>${response.data[i].nombre}</option>`);
+    }
+}
+
 /******************************
  * PANTALLAS
  ******************************/
@@ -627,9 +641,9 @@ function mostrarCompra() {
     myNavigator.bringPageTop(`compra.html`);
 }
 
-/******************************
+/**********
  * MAPAS Y UBICACION
- ******************************/
+ **********/
 function cargarPosicionDelUsuario() {
 
     window.navigator.geolocation.getCurrentPosition(
@@ -653,22 +667,89 @@ function cargarPosicionDelUsuario() {
 }
 
 function inicializarMapa() {
-    // Guardo referencia global a mi mapa.
+    if (miMapa) {
+        miMapa.remove();
+    }
     miMapa = L.map("contenedor-mapa").setView([posicionDelUsuario.latitude, posicionDelUsuario.longitude], 13);
-
-    // Vacio el mapa.
-    miMapa.eachLayer(m => m.remove());
-
-    // Dibujo la cartografia base.
+    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Mi ubicación').openPopup();
     L.tileLayer(
-        "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWNhaWFmYSIsImEiOiJjanh4cThybXgwMjl6M2RvemNjNjI1MDJ5In0.BKUxkp2V210uiAM4Pd2YWw",
-        {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-            id: "mapbox/streets-v11",
-            accessToken: "your.mapbox.access.token"
-        }
+      "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWNhaWFmYSIsImEiOiJjanh4cThybXgwMjl6M2RvemNjNjI1MDJ5In0.BKUxkp2V210uiAM4Pd2YWw",
+      {
+          attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          maxZoom: 18,
+          id: "mapbox/streets-v11",
+          accessToken: "your.mapbox.access.token"
+      }
     ).addTo(miMapa);
 }
+
+function cargarPosicionesSucursales() {
+    // para ver que me tire bien las sucursales
+    // console.log(sucursales);
+    for (let i = 0; i < sucursales.lenght; i++) {
+        buscarDireccion(sucursales[i].direccion, sucursales[i].nombre);
+        //no se qué es , preguntar
+        //hidespinner()}
+    }
+}
+
+
+// Funcion que usa la API de OpenStreetMap para buscar las coordenadas de una direccion.
+function buscarDireccion(direccionBuscada, sucursal) {
+    $.ajax({
+        type: 'GET',
+        url: `https://nominatim.openstreetmap.org/search?format=json&q=${direccionBuscada}, Uruguay`,
+        contentType: "application/json",
+        success: function (data) {
+            if (data.length > 0) {
+                //L.marker([data[0].lat, data[0].lon]).addTo(miMapa).bindPopup(direccionBuscada);
+                //miMapa.panTo(new L.LatLng(data[0].lat, data[0].lon));
+                dibujarDistancia(data[0].lat, data[0].lon);
+            } else {
+                alert("No se han encontrado datos");
+            }
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+// Funcion que se encarga de dibujar un punto en el mapa y agregar una una linea desde la posicion del usuario hasta el punto dibujado.
+function dibujarDistancia(lat, lon, sucursal) {
+    // Dibujo el punto en el mapa.
+    L.marker([lat, lon]).addTo(miMapa).bindPopup('${sucursal}').openPopUp();
+    // Array con los puntos del mapa que voy a usar para la linea.
+    const puntosLinea = [
+        [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
+        [lat, lon]
+    ];
+    // Calculo la distancia usando la libreria. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
+    const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
+    // Dibujo una linea amarilla con un pop up mostrando la distancia.
+    const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
+    // Centro el mapa en la linea.
+    miMapa.fitBounds(polyline.getBounds());
+}
+
+function cargarSucursales(){ 
+    $.ajax({
+    type: 'GET',
+    url: urlBase + `sucursales`,
+    contentType: 'application/json',
+    beforeSend: cargarTokenEnRequest,
+    success: mostrarSucursales,
+    error: cargarSucursalesError
+    });
+}
+
+    //hacer bien las funciones de ok y de error
+function obtenerSucursalesAPIOk(data){console.log}(data);
+sucursales=data.data;
+console.log(data.data[0].direccion)
+
+    //hacer bien las funciones de ok y de error
+function cargarSucursalesError(error){}
 
 function btnDibujarPosicionDelUsuarioHandler() {
     L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicacion del usuario').openPopup();
@@ -679,7 +760,7 @@ function btnBuscarDireccionHandler() {
     const direccionBuscada = $("#inputDireccionBuscada").val();
     buscarDireccion(direccionBuscada);
 }
-
+/*
 // Funcion que usa la API de OpenStreetMap para buscar las coordenadas de una direccion.
 function buscarDireccion(direccionBuscada) {
     $.ajax({
@@ -716,7 +797,7 @@ function dibujarDistancia(lat, lon) {
     const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
     // Centro el mapa en la linea.
     miMapa.fitBounds(polyline.getBounds());
-}
+}*/
 
 /******************************
  * QR
@@ -735,33 +816,33 @@ function prepareCallback(err, status) {
         ons.notification.alert(JSON.stringify(err));
     }
     if (status.authorized) {
-        // Tenemos acceso y el escaner est� inicializado.
+        // Tenemos acceso y el escaner esta inicializado.
     } else if (status.denied) {
-        // El usuario rechaz� el pedido, la pantalla queda en negro.
+        // El usuario rechazo el pedido, la pantalla queda en negro.
         ons.notification.alert('status.denied');
-        // Podemos volver a preguntar mandando al usuario a la configuraci�n de permisos con QRScanner.openSettings().
+        // Podemos volver a preguntar mandando al usuario a la configuracion de permisos con QRScanner.openSettings().
     } else {
-        // Nos rechazaron solo por esta vez. Podr�amos volver a hacer el pedido.
+        // Nos rechazaron solo por esta vez. Podriamos volver a hacer el pedido.
         ons.notification.toast("Nos cancelaron una sola vez", { timeout: 2000 });
     }
 }
 
-// Funci�n que me lleva a la pantalla de escaneo.
+// Funcion que me lleva a la pantalla de escaneo.
 function irAlScan() {
     myNavigator.pushPage("qrPage.html");
 }
 
-// Funci�n que se dispara al ingresar a la p�gina de escaneo.
+// Funcion que se dispara al ingresar a la pagina de escaneo.
 function escanear() {
     // Si hay scanner
     if (window.QRScanner) {
         // Esto lo uso para mostrar la cam en la app.
         // Por defecto la vista previa queda por encima del body y el html.
         // Pero por un tema de compatibilidad con Onsen, queda por debajo de la page.
-        // Mirar el css y ver c�mo hay que hacer que esta page sea transparente para que se vea la c�mara.
+        // Mirar el css y ver como hay que hacer que esta page sea transparente para que se vea la camara.
         window.QRScanner.show(
             function (status) {
-                // Funci�n de scan y su callback
+                // Funcion de scan y su callback
                 window.QRScanner.scan(scanCallback);
             }
         );
@@ -770,10 +851,10 @@ function escanear() {
 
 function scanCallback(err, text) {
     if (err) {
-        // Ocurri� un error o el escaneo fue cancelado(error code '6').
+        // Ocurrio un error o el escaneo fue cancelado(error code '6').
         ons.notification.alert(JSON.stringify(err));
     } else {
-        // Si no hay error escondo el callback y vuelvo a la pantalla anterior pasando el string que se escane� con la url del producto.
+        // Si no hay error escondo el callback y vuelvo a la pantalla anterior pasando el string que se escaneo con la url del producto.
         QRScanner.hide();
         myNavigator.popPage({ data: { scanText: text } });
     }
@@ -781,7 +862,7 @@ function scanCallback(err, text) {
 
 // Si hay algo escaneado trae el producto y lo muestra
 function cargarBusquedaQr() {
-    // Si me pasaron datos por par�metro en la navegaci�n.
+    // Si me pasaron datos por parametro en la navegacion.
     // Hacer this.data es lo mismo que hacer myNavigator.topPage.data
     if (this.data && this.data.scanText) {
         ons.notification.alert(this.data.scanText);
@@ -819,7 +900,7 @@ function cargarBusquedaQr() {
     }
 }  
 
-// Funci�n de callback de error ajax.
+// Funcion de callback de error ajax.
 function errorCallBack(resp) {
     console.log(resp);
     // Si el status es 401 quiere decir que no estoy autorizado.
