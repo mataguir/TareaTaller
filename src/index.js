@@ -581,7 +581,6 @@ function obtenerProdConIdErrorCallback(error) {
 
 function mostrarSucursales(response) {
     console.log(response.data)
-    debugger
     $('#select-sucursal').html('')
     for (let i = 0; i < response.data.length; i++) {
         $('#select-sucursal').append(`<option value=${response.data[i].id}>${response.data[i].nombre}</option>`);
