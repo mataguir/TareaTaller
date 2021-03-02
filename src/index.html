@@ -18,7 +18,7 @@
 </head>
 <body>
     <ons-splitter>
-         <ons-splitter-side id="menu" side="right" width="220px" animation="overlay" collapse swipeable>
+         <ons-splitter-side id="menu" side="right" width="220px" animation="overlay" collapse>
             <ons-page>
                 <ons-list>
                     <ons-list-header id="menu-list-header">Usuario logueado</ons-list-header>
@@ -26,18 +26,15 @@
                     <ons-list-item onclick="irFavoritos()" tappable>Favoritos</ons-list-item>
                     <ons-list-item onclick="irPedidos()" modifier="nodivider" tappable>Pedidos</ons-list-item>
                     <ons-list-item style="margin-top: 100%;opacity: 0.8;" onclick="cerrarSesion()" tappable>Cerrar Sesion</ons-list-item>
-
                 </ons-list>
             </ons-page>
         </ons-splitter-side>
         <ons-splitter-content>
             <ons-navigator swipeable id="navigator" page="login.html"></ons-navigator>
         </ons-splitter-content>
-
     </ons-splitter>
 
     <template id="home.html">
-            <!-- El toolbar coloca en la parte superior una barra donde puedo poner botones, textos, íconos, etc. -->
             <ons-page>
                 <ons-toolbar>
                     <div class="right">
@@ -115,7 +112,6 @@
     <template id="qrPage.html">
         <ons-page id="qrPage">
             <script>
-                // Script para lanzar la función de scanear.
                 ons.getScriptPage().onInit = escanear;
                 // Sobrescribo el back button para esconder el escaner y mandar a la pantalla anterior el valor ''.
                 document.querySelector('ons-back-button').onClick = function(event) {
@@ -180,6 +176,8 @@
         <ons-page>
             <script>
                 ons.getScriptPage().onInit = cargarDetallesPedido;
+                ons.getScriptPage().onShow = cargarPosicionDelUsuario;
+                // ons.getScriptPage().onShow = cargarPosicionesSucursales;
             </script>
             <ons-toolbar modifier="material">
                 <div class="center">Compra</div>
@@ -194,6 +192,34 @@
                     <ons-input id="cantidad-compra" modifier="material underbar" type="number" placeholder="Cantidad" float></ons-input>
                 </p>
                 <p style="color: red;" id="mensaje-pedido"></p>
+            </div>
+            <!-- Combo para mostrar las sucursales -->
+            <div id="divContenidoSucursales" style="text-align: center; margin-top: 30px;">
+                <div id="divBusqueda">
+                    <ons-select class="select">
+                        <div style="font-weight: 600;" class="title card__title">Seleccione Sucursal: </div><br>
+                        <select style="margin: 20px 0;" id="select-sucursal" class="select-input">
+                        </select>
+                    </ons-select><br>
+                    <ons-button modifier="" onclick="buscarSucursalCombo()">Elegir</ons-button>
+                </div><br>
+                <div id="divResultadoSucursal" style="text-align: center; margin-top: 30px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Distancia</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaResultadoSucursal"></tbody>
+                    </table>
+                </div><br><br>
+                <!-- En esta div hay botones para pedir ubicación en el mapa del usuario y mostrar las sucursales -->
+                <div>
+                    <input type="button" value="Buscar sucursales cercanas" id="btnDibujarPosicionSucursales"><br><br>
+                </div><br><br>
+                <!-- Div donde se dibujará nuestro mapa -->
+                <div id="contenedor-mapa" style="width: 100%; height: 500px;"></div>
                 <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;" id="boton-realizar-pedido">
                     <ons-button ripple onclick="realizarPedido()">Hacer Pedido</ons-button>
@@ -259,14 +285,13 @@
                     Tus pedidos
                 </div>
             </ons-toolbar>
-                <!-- en esta div está un gif de espera mientras se carga la página -->
                 <div id="divCarga" style="text-align: center;">
                     <div style="margin: 20px auto; width: 320px;">
                         <h2 style="margin: 0;">Se está procesando su pedido...</h2>
                         <ons-progress-circular indeterminate></ons-progress-circular>
                     </div>
                 </div>
-            <ons-card>
+            <ons-card style="width: fit-content;">
                 <div class="title">
                     Tus pedidos
                 </div>
@@ -298,7 +323,7 @@
             </div>
             <br><br>
             <!-- Div donde se dibujará nuestro mapa -->
-            <div id="contenedor-mapa" style="width: 100%; height: 500px;"></div>
+            <div id="contenedor-mapa" style="width: 380px; height: 380px;"></div>
         </ons-page>
     </template>
 
@@ -316,7 +341,6 @@
                 </p>
                 <p id="msj-error-login"></p>
                 <p style="color: red;" id="respuesta-login"></p>
-                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;">
                 <ons-button ripple onclick="inicioSesionHandler()">Iniciar Sesión</ons-button></p>
                 <p>¿No tiene usuario?
@@ -355,7 +379,6 @@
                     <ons-input id="password2" modifier="material underbar" type="password" placeholder="Repita el password" float></ons-input>
                 </p>
                 <p style="color: red;" id="respuesta-registro"></p>
-                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
                 <p style="margin-top: 30px;">
                     <ons-button ripple onclick="registrarUsuario()">Registrarse</ons-button>
                 </p>
@@ -365,6 +388,5 @@
             </div>
         </ons-page>
 </template>
-   
 </body>
 </html>
