@@ -16,7 +16,7 @@ let tokenGuardado;
 let productoAComprar;
 
 // Sucursales
-let sucursales ;
+let sucursales = [];
 
 //Expresión regular para chequear el mail
 const emailformat = /^(?:([.!#$%&'*+-/=?^_`])(?!\1+))*([\w-éüîñçè我買二ノ宮संपर्क日本]+(?:([.!#$%&'*+-/=?^_`;])(?!\3+)[\w-éüîñçè我買二ノ宮संपर्क日本]*)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,20}(?:\.[a-z]{2})?)$/i;
@@ -46,7 +46,6 @@ document.addEventListener(
 
 function todoCargado() {
     myNavigator = document.querySelector('#navigator');
-    $("#btnDibujarPosicionDelUsuario").click(btnDibujarPosicionDelUsuarioHandler);
     $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
 }
@@ -72,9 +71,9 @@ function inicializar() {
 
 function cerrarSesion() {
     window.localStorage.removeItem('APPObligatorioToken');
-    //inicializar();
+    inicializar();
     // va inicializar y no va pushpage, solo la puse para probar el boton
-    myNavigator.pushPage(`login.html`);
+    //myNavigator.pushPage(`login.html`);
     cerrarMenu();
 }
 
@@ -422,21 +421,8 @@ function traerPedidosErrorCallback(error) {
  /******************************
  * FAVORITOS
  ******************************/
-/* function crearPedido(){
- let unProductoObjeto = new Pedido()
 
-               <tr> 
-                     <td><input class="btnProductoFavorito" Id="${unPedidoObjeto.idProducto}" type="button" value="${obtenerNombreBotonFavorito(unProductoObjeto)}">
-                     </td>
-                </tr>
-           }
-           
-            $(".btnProductoFavorito").click(btnProductoFavoritoHandler) ;
-          
-}
-*/
-
-function devolverProdFavoritoDeUsuarioLogueado() {
+ function devolverProdFavoritoDeUsuarioLogueado() {
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
     let favoritosJSON = null;
     if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
@@ -579,14 +565,6 @@ function obtenerProdConIdErrorCallback(error) {
     console.log(error.responseJSON.error);
 }
 
-function mostrarSucursales(response) {
-    console.log(response.data)
-    $('#select-sucursal').html('')
-    for (let i = 0; i < response.data.length; i++) {
-        $('#select-sucursal').append(`<option value=${response.data[i].id}>${response.data[i].nombre}</option>`);
-    }
-}
-
 /******************************
  * PANTALLAS
  ******************************/
@@ -680,16 +658,24 @@ function inicializarMapa() {
           accessToken: "your.mapbox.access.token"
       }
     ).addTo(miMapa);
+    cargarPosicionesSucursales();
 }
 
 function cargarPosicionesSucursales() {
-    // para ver que me tire bien las sucursales
-    // console.log(sucursales);
-    for (let i = 0; i < sucursales.lenght; i++) {
+    for (let i = 0; i < sucursales.length; i++) {
         buscarDireccion(sucursales[i].direccion, sucursales[i].nombre);
-        //no se qué es , preguntar
-        //hidespinner()}
     }
+}
+
+function mostrarSucursales() {
+    $('#select-sucursal').html('')
+    for (let i = 0; i < sucursales.length; i++) {
+        $('#select-sucursal').append(`<option value=${sucursales[i].id}>${sucursales[i].nombre}</option>`);
+    }
+}
+
+function buscarSucursal() {
+    
 }
 
 
@@ -703,7 +689,7 @@ function buscarDireccion(direccionBuscada, sucursal) {
             if (data.length > 0) {
                 //L.marker([data[0].lat, data[0].lon]).addTo(miMapa).bindPopup(direccionBuscada);
                 //miMapa.panTo(new L.LatLng(data[0].lat, data[0].lon));
-                dibujarDistancia(data[0].lat, data[0].lon);
+                dibujarDistancia(data[0].lat, data[0].lon, sucursal);
             } else {
                 alert("No se han encontrado datos");
             }
@@ -716,8 +702,9 @@ function buscarDireccion(direccionBuscada, sucursal) {
 
 // Funcion que se encarga de dibujar un punto en el mapa y agregar una una linea desde la posicion del usuario hasta el punto dibujado.
 function dibujarDistancia(lat, lon, sucursal) {
+    debugger
     // Dibujo el punto en el mapa.
-    L.marker([lat, lon]).addTo(miMapa).bindPopup('${sucursal}').openPopUp();
+    L.marker([lat, lon]).addTo(miMapa).bindPopup(sucursal).openPopUp();
     // Array con los puntos del mapa que voy a usar para la linea.
     const puntosLinea = [
         [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
@@ -737,66 +724,23 @@ function cargarSucursales(){
     url: urlBase + `sucursales`,
     contentType: 'application/json',
     beforeSend: cargarTokenEnRequest,
-    success: mostrarSucursales,
+    success: function (response) {
+        sucursales = response.data;
+        mostrarSucursales()
+    },
     error: cargarSucursalesError
     });
 }
 
-    //hacer bien las funciones de ok y de error
-function obtenerSucursalesAPIOk(data){console.log}(data);
-sucursales=data.data;
-console.log(data.data[0].direccion)
-
-    //hacer bien las funciones de ok y de error
-function cargarSucursalesError(error){}
-
-function btnDibujarPosicionDelUsuarioHandler() {
-    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicacion del usuario').openPopup();
-    miMapa.panTo(new L.LatLng(posicionDelUsuario.latitude, posicionDelUsuario.longitude));
+//hacer bien las funciones de ok y de error
+function cargarSucursalesError(error){
+    console.log(error.responseJSON.error);
 }
 
 function btnBuscarDireccionHandler() {
     const direccionBuscada = $("#inputDireccionBuscada").val();
     buscarDireccion(direccionBuscada);
 }
-/*
-// Funcion que usa la API de OpenStreetMap para buscar las coordenadas de una direccion.
-function buscarDireccion(direccionBuscada) {
-    $.ajax({
-        type: 'GET',
-        url: `https://nominatim.openstreetmap.org/search?format=json&q=${direccionBuscada}, Uruguay`,
-        contentType: "application/json",
-        success: function (data) {
-            if (data.length > 0) {
-                // L.marker([data[0].lat, data[0].lon]).addTo(miMapa).bindPopup(direccionBuscada);
-                // miMapa.panTo(new L.LatLng(data[0].lat, data[0].lon));
-                dibujarDistancia(data[0].lat, data[0].lon);
-            } else {
-                alert("No se han encontrado datos");
-            }
-        },
-        error: function (error) {
-            console.log(error);
-        }
-    });
-}
-
-// Funcion que se encarga de dibujar un punto en el mapa y agregar una una linea desde la posicion del usuario hasta el punto dibujado.
-function dibujarDistancia(lat, lon) {
-    // Dibujo el punto en el mapa.
-    L.marker([lat, lon]).addTo(miMapa);
-    // Array con los puntos del mapa que voy a usar para la linea.
-    const puntosLinea = [
-        [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
-        [lat, lon]
-    ];
-    // Calculo la distancia usando la libreria. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
-    const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
-    // Dibujo una linea amarilla con un pop up mostrando la distancia.
-    const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
-    // Centro el mapa en la linea.
-    miMapa.fitBounds(polyline.getBounds());
-}*/
 
 /******************************
  * QR
