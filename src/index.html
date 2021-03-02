@@ -42,10 +42,10 @@
                 <ons-toolbar>
                     <div class="right">
                         <ons-toolbar-button onclick="abrirMenu()">
-                            <ons-icon size="25px" style="color: green;"  icon="md-menu"></ons-icon>
+                            <ons-icon size="25px" icon="md-menu"></ons-icon>
                         </ons-toolbar-button>
                     </div>
-                    <div style="color: green" class="center">
+                    <div class="center">
                         Home
                     </div>
                 </ons-toolbar>
@@ -58,8 +58,8 @@
     <template id="catalogo.html">
         <ons-page>
             <script>
-                ons.getScriptPage().onInit = mostrarProductos();
-                ons.getScriptPage().onShow = cargarBusquedaQr();
+                ons.getScriptPage().onInit = mostrarProductos;
+                ons.getScriptPage().onShow = cargarBusquedaQr;
             </script>
             <ons-toolbar>
                 <div class="right">
@@ -73,9 +73,10 @@
             </ons-toolbar>
             <div id="busquedaDeProductos" style="text-align: center;">
                 <!-- en el catálogo hay que realizar una búsqueda de productos por nombre y etiqueta, acá va la búsqueda por nombre. -->
+                <!-- también acá debe ir la búsequeda por código QR -->
                 <p style="text-align: center; margin-top: 20px;">
                     <ons-search-input id="buscar-producto" placeholder="Buscar producto" onkeyup="buscar(this.value)"></ons-search-input>
-                    <ons-button style=" margin-bottom -14px;" modifier="quiet" onclick="">
+                    <ons-button style=" margin-bottom: -14px;" modifier="quiet" onclick="">
                         <ons-icon style="font-size: 30px;  color: darkslategray;" icon="md-camera"></ons-icon>
                     </ons-button>
                 </p>
@@ -114,15 +115,15 @@
     <template id="qrPage.html">
         <ons-page id="qrPage">
             <script>
-                    // Script para lanzar la función de scanear.
-                    ons.getScriptPage().onInit = escanear;
-                    // Sobrescribo el back button para esconder el escaner y mandar a la pantalla anterior el valor ''.
-                    document.querySelector('ons-back-button').onClick = function(event) {
-                        if(window.QRScanner) {
-                            QRScanner.hide();
-                        }
-                        myNavigator.popPage({data: {scanText: ''}});
-                    };
+                // Script para lanzar la función de scanear.
+                ons.getScriptPage().onInit = escanear;
+                // Sobrescribo el back button para esconder el escaner y mandar a la pantalla anterior el valor ''.
+                document.querySelector('ons-back-button').onClick = function(event) {
+                    if(window.QRScanner) {
+                        QRScanner.hide();
+                    }
+                    myNavigator.popPage({data: {scanText: ''}});
+                };
             </script>
             <ons-toolbar>
                 <div class="left">
@@ -133,7 +134,7 @@
         </ons-page>
     </template>
 
-       <template id="offline.html">
+    <template id="offline.html">
         <ons-page id="offline">
             <div style="height: 100%; display: flex;">
                 <img src="img/no-internet.png" style="width: 75%; display: block; margin: auto;">
@@ -142,7 +143,7 @@
         </ons-page>
     </template>
 
-        <template id="detalle-producto.html">
+    <template id="detalle-producto.html">
         <ons-page>
             <ons-toolbar modifier="material">
                 <div class="center">Detalles de Producto</div>
@@ -178,7 +179,7 @@
     <template id="compra.html">
         <ons-page>
             <script>
-                ons.getScriptPage().onInit = cargarDetallesPedido();
+                ons.getScriptPage().onInit = cargarDetallesPedido;
             </script>
             <ons-toolbar modifier="material">
                 <div class="center">Compra</div>
@@ -206,6 +207,9 @@
 
     <template id="favoritos.html">
         <ons-page>
+            <script>
+                ons.getScriptPage().onInit = listadoFavoritos;
+            </script>
             <ons-toolbar>
                 <div class="right">
                     <ons-toolbar-button onclick="abrirMenu()">
@@ -216,13 +220,24 @@
                     Favoritos
                 </div>
             </ons-toolbar>
-            <ons-card>
+            <ons-card style=" width: fit-content;">
                 <div class="title">
                     Favoritos
                 </div>
-                <div class="content">
-                    <p>Probando contenido </p>
-
+                <div id="lista-favoritos" class="content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Imagen</th>
+                                <th>Código</th>
+                                <th>Estado</th>
+                                <th>Quitar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-favoritos"></tbody>
+                    </table>
                 </div>
             </ons-card>
         </ons-page>
@@ -231,7 +246,8 @@
     <template id="pedidos.html">
         <ons-page>
             <script>
-                ons.getScriptPage().onInit = traerPedidos();
+                ons.getScriptPage().onInit = traerPedidos;
+                ons.getScriptPage().onShow = cargarPosicionDelUsuario;
             </script>
             <ons-toolbar>
                 <div class="right">

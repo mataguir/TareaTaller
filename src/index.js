@@ -21,7 +21,7 @@ document.addEventListener("deviceready", onDeviceReady, false);
 
 ons.ready(todoCargado);
 
-// Le decimos qué hacer cuando el dispositivo se queda sin internet.
+// Le decimos que hacer cuando el dispositivo se queda sin internet.
 document.addEventListener(
     "offline",
     function () {
@@ -30,7 +30,7 @@ document.addEventListener(
     false
 );
 
-// Le decimos qué hacer cuando el dispositivo vuelve a tener acceso a internet.
+// Le decimos que hacer cuando el dispositivo vuelve a tener acceso a internet.
 document.addEventListener(
     "online",
     function () {
@@ -41,7 +41,6 @@ document.addEventListener(
 
 function todoCargado() {
     myNavigator = document.querySelector('#navigator');
-    cargarPosicionDelUsuario();
     $("#btnDibujarPosicionDelUsuario").click(btnDibujarPosicionDelUsuarioHandler);
     $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
@@ -287,14 +286,20 @@ function traerProductosErrorCallback(error) {
 function cargarProductos(productos) {
     $('#tabla-resultados-productos').html('');
     for (let i = 0; i < productos.length; i++) {
-        $('#tabla-resultados-productos').append(`<tr onclick="detalleProducto(${i})" data-id="${productos[i]._id}"><td>${productos[i].nombre}</td><td>${productos[i].precio}</td><td>${productos[i].urlImagen}</td><td>${productos[i].codigo}</td><td>${productos[i].etiquetas}</td><td>${productos[i].estado}</td>
-                                     <td><input type="button" value="AGREGAR"></td> /tr>`);
-        /*    <td><input class="btnProductoFavorito" id="${productos[i]._id} type="button" value="${obtenerNombreBotonFavorito(unProductoObjeto)}"></td>*/
-
+        $('#tabla-resultados-productos').append(`<tr data-id="${productos[i]._id}">
+        <td class="nombre-producto" onclick="detalleProducto(${i})">${productos[i].nombre}</td>
+        <td onclick="detalleProducto(${i})">${productos[i].precio}</td>
+        <td onclick="detalleProducto(${i})">${productos[i].urlImagen}</td>
+        <td onclick="detalleProducto(${i})">${productos[i].codigo}</td>
+        <td class="etiquetas-producto" onclick="detalleProducto(${i})">${productos[i].etiquetas}</td>
+        <td onclick="detalleProducto(${i})">${productos[i].estado}</td>
+        <td style="text-align: center;"><i style="font-size: 35px;color: royalblue;" onclick="agregarFavoritoHandler(${i})" class="agregar-favoritos fa fa-heart-o"></i></td>`);
     }
+    cargarIconosFavoritos();
 }
-function detalleProducto(e) {
-    traerUnProducto($('#tabla-resultados-productos tr').eq(e).data());
+
+function detalleProducto(info) {
+    traerUnProducto($('#tabla-resultados-productos tr').eq(info).data());
     mostrarProducto();
 }
 
@@ -317,8 +322,15 @@ function traerUnProductoErrorCallback(error) {
 
 function mostrarUnProducto(detalles) {
     $('#tabla-detalle-producto').html('');
-    $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td><td>${detalles.precio}</td><td>${detalles.urlImagen}</td><td>${detalles.codigo}</td><td>${detalles.etiquetas}</td><td>${detalles.estado}</td><td>${detalles.descripcion}</td><td>${detalles.puntaje}<td>
-</tr>`);
+    $('#tabla-detalle-producto').append(`<tr><td>${detalles.nombre}</td>
+    <td>${detalles.precio}</td>
+    <td>${detalles.urlImagen}</td>
+    <td>${detalles.codigo}</td>
+    <td>${detalles.etiquetas}</td>
+    <td>${detalles.estado}</td>
+    <td>${detalles.descripcion}</td>
+    <td>${detalles.puntaje}<td></tr>`);
+
     productoAComprar = detalles;
     if (detalles.estado == 'en stock') {
         $('#mensaje-stock').html('');
@@ -331,6 +343,7 @@ function mostrarUnProducto(detalles) {
 }
 
 function buscar(entrada) {
+
     let nombres = $('.nombre-producto');
     let etiquetas = $('.etiquetas-producto');
 
@@ -375,8 +388,13 @@ function cargarDetallesPedido() {
 
 function cargarPedidos(pedidos) {
     $('#tabla-pedidos').html('');
-    $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td><td>${pedidos.precio}</td><td>${pedidos.urlImagen}</td><td>${pedidos.codigo}</td><td>${pedidos.etiquetas}</td><td>${pedidos.estado}</td><td>${pedidos.sucursal}</td></tr>`);
-    
+    $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td>
+    <td>${pedidos.precio}</td>
+    <td>${pedidos.urlImagen}</td>
+    <td>${pedidos.codigo}</td>
+    <td>${pedidos.etiquetas}</td>
+    <td>${pedidos.estado}</td>
+    <td>${pedidos.sucursal}</td></tr>`);
 }
 
 function traerPedidos() {
@@ -413,63 +431,114 @@ function traerPedidosErrorCallback(error) {
 }
 */
 
-// Funciï¿½n que revisa si el producto estï¿½ o no en favoritos para ver quï¿½ texto ponerle al botï¿½n.
-function obtenerNombreBotonFavorito(producto) {
-    let nombreBoton = "Agregar";
+function listadoFavoritos() {
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
     let favoritosJSON = null;
-    if (favoritosLocalStorage) {
+    if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
         favoritosJSON = JSON.parse(favoritosLocalStorage);
-        let i = 0;
-        let encontrada = false;
-        while (!encontrada && i < favoritosJSON.length) {
-            let unFavorito = favoritosJSON[i];
-            if (unFavorito.idProducto === producto.idProducto) {
-                encontrada = true;
-                nombreBoton = "Sacar";
-            }
-            i++;
-        }
+        listarFavoritos(favoritosJSON);
     }
-    return nombreBoton;
 }
 
+function listarFavoritos(favoritos) {
+    $('#tabla-favoritos').html('');
+    for (let i = 0; i < favoritos.length; i++) {
+        $('#tabla-favoritos').append(`<tr data-id="${favoritos[i]._id}">
+        <td class="nombre-producto"">${favoritos[i].nombre}</td>
+        <td>${favoritos[i].precio}</td>
+        <td>${favoritos[i].urlImagen}</td>
+        <td>${favoritos[i].codigo}</td>
+        <td>${favoritos[i].estado}</td>
+        <td style="text-align: center;"><i style="font-size: 35px;color: red;" onclick="quitarFavorito(${i})" class="quitar-favoritos fas fa-times-circle"></i></td>`);
+    }
+}
 
-// Revisa si el producto estï¿½ o no en favoritos y la elimina o agrega segï¿½n corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
-function btnProductoFavoritoHandler() {
-    let productoId = $(this).attr("productoId");
+function quitarFavorito(param) {
+    let filaAQuitar = $('.quitar-favoritos').eq(param).parent().parent();
+    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
+    favoritosJSON = JSON.parse(favoritosLocalStorage);
+    favoritosJSON.splice(param, 1);
+    window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(favoritosJSON));
+    filaAQuitar.hide();
+}
+
+function cargarIconosFavoritos() {
+    let iconos = $('#tabla-resultados-productos tr .agregar-favoritos');
     let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
     let favoritosJSON = null;
-    let producto = obtenerProductoPorID(productoId);
-    if (favoritosLocalStorage) {
+    if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
         favoritosJSON = JSON.parse(favoritosLocalStorage);
-        let i = 0;
+        for (let i = 0; i < iconos.length; i++) {
+            for (let j = 0; j < favoritosJSON.length; j++) {
+                if (favoritosJSON[j]._id === iconos.eq(i).parent().parent().data().id) {
+                    iconos.eq(i).removeClass();
+                    iconos.eq(i).addClass('agregar-favoritos fa fa-heart');
+                }
+            }
+        }
+    }
+}
+
+function cambiarIconoFavoritos(icono) {
+    if (icono.hasClass('fa fa-heart-o')) {
+        icono.removeClass();
+        icono.addClass('agregar-favoritos fa fa-heart');
+    }
+    else if(icono.hasClass('fa fa-heart')) {
+        icono.removeClass();
+        icono.addClass('agregar-favoritos fa fa-heart-o');
+    }
+}
+
+// Revisa si el producto esta o no en favoritos y la elimina o agrega segun corresponda y en el caso que no estuviera como favorita le cambia la imagen al boton llamando a la funcion obtenerImagenDelBotonFavorito()
+function agregarFavorito(prod, icono) {
+    let producto = prod;
+    let productoId = prod._id;
+    let favoritosLocalStorage = window.localStorage.getItem("APPProductosFavoritos");
+    let favoritosJSON = null;
+    if (favoritosLocalStorage && favoritosLocalStorage != 'null') {
+        favoritosJSON = JSON.parse(favoritosLocalStorage);
         let encontrada = false;
-        while (!encontrada && i < favoritosJSON.length) {
-            let unFavorito = favoritosJSON[i];
-            if (unFavorito.idProducto === productoId) {
+        for (let i = 0; i < favoritosJSON.length; i++) {
+            if (favoritosJSON[i]._id === productoId) {
                 encontrada = true;
                 // Elimino la receta del array de favoritos
                 favoritosJSON.splice(i, 1);
             }
-            i++;
         }
-        // Si no encontrï¿½ la receta entre los favoritos, la agrego.
         if (!encontrada) {
             if (producto) {
                 favoritosJSON.push(producto);
             }
         }
     } else {
-        // Si no tenï¿½a ningï¿½n favorito en localStorage, agrego la receta en cuestiï¿½n.
+        // Si no tenia ningun favorito en localStorage, agrego la receta en cuestion.
         if (producto) {
             favoritosJSON = [producto];
-
         }
     }
     // Actualizo mis favoritos en el localStorage.
     window.localStorage.setItem("APPProductosFavoritos", JSON.stringify(favoritosJSON));
-    mostrarHome();
+    cambiarIconoFavoritos(icono);
+}
+
+function agregarFavoritoHandler(p) {
+    let idProducto = $('#tabla-resultados-productos tr').eq(p).data();
+    let icono = $('#tabla-resultados-productos tr').eq(p).find('.agregar-favoritos');
+    $.ajax({
+        type: 'GET',
+        url: urlBase + `productos/${idProducto.id}`,
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        success: function (response) {
+            agregarFavorito(response.data, icono);
+        },
+        error: obtenerProdConIdErrorCallback
+    });
+}
+
+function obtenerProdConIdErrorCallback(error) {
+    console.log(error.responseJSON.error);
 }
 
 /******************************
@@ -485,11 +554,11 @@ function mostrarHome() {
 }
 
 function registro() {
-myNavigator.pushPage(`registro.html`)
+    myNavigator.pushPage(`registro.html`)
 }
 
 function abrirMenu() {
-       document.querySelector('#menu').open();
+    document.querySelector('#menu').open();
 }
 
 function irCatalogo() {
@@ -498,7 +567,8 @@ function irCatalogo() {
 }
 
 function irFavoritos() {
-    myNavigator.pushPage(`favoritos.html`);
+    myNavigator.bringPageTop(`favoritos.html`);
+    listadoFavoritos();
     cerrarMenu();
 }
 
@@ -508,7 +578,7 @@ function irPedidos() {
 }
 
 function cerrarMenu() {
-       document.querySelector('#menu').close();
+    document.querySelector('#menu').close();
 }
 
 function mostrarProducto() {
@@ -529,7 +599,7 @@ function mostrarCompra() {
 function cargarPosicionDelUsuario() {
 
     window.navigator.geolocation.getCurrentPosition(
-        // Callback de ï¿½xito.
+        // Callback de exito.
         function (pos) {
             posicionDelUsuario = {
                 latitude: pos.coords.latitude,
@@ -548,20 +618,18 @@ function cargarPosicionDelUsuario() {
     )
 }
 
-
-
 function inicializarMapa() {
     // Guardo referencia global a mi mapa.
     miMapa = L.map("contenedor-mapa").setView([posicionDelUsuario.latitude, posicionDelUsuario.longitude], 13);
 
-    // Vacï¿½o el mapa.
+    // Vacio el mapa.
     miMapa.eachLayer(m => m.remove());
 
-    // Dibujo la cartografï¿½a base.
+    // Dibujo la cartografia base.
     L.tileLayer(
         "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWNhaWFmYSIsImEiOiJjanh4cThybXgwMjl6M2RvemNjNjI1MDJ5In0.BKUxkp2V210uiAM4Pd2YWw",
         {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery ï¿½ <a href="https://www.mapbox.com/">Mapbox</a>',
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery Â© <a href="https://www.mapbox.com/">Mapbox</a>',
             id: "mapbox/streets-v11",
             accessToken: "your.mapbox.access.token"
         }
@@ -569,7 +637,7 @@ function inicializarMapa() {
 }
 
 function btnDibujarPosicionDelUsuarioHandler() {
-    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicaciï¿½n del usuario').openPopup();
+    L.marker([posicionDelUsuario.latitude, posicionDelUsuario.longitude]).addTo(miMapa).bindPopup('Ubicacion del usuario').openPopup();
     miMapa.panTo(new L.LatLng(posicionDelUsuario.latitude, posicionDelUsuario.longitude));
 }
 
@@ -578,7 +646,7 @@ function btnBuscarDireccionHandler() {
     buscarDireccion(direccionBuscada);
 }
 
-// Funciï¿½n que usa la API de OpenStreetMap para buscar las coordenadas de una direcciï¿½n.
+// Funcion que usa la API de OpenStreetMap para buscar las coordenadas de una direccion.
 function buscarDireccion(direccionBuscada) {
     $.ajax({
         type: 'GET',
@@ -599,20 +667,20 @@ function buscarDireccion(direccionBuscada) {
     });
 }
 
-// Funciï¿½n que se encarga de dibujar un punto en el mapa y agregar una una lï¿½nea desde la posiciï¿½n del usuario hasta el punto dibujado.
+// Funcion que se encarga de dibujar un punto en el mapa y agregar una una linea desde la posicion del usuario hasta el punto dibujado.
 function dibujarDistancia(lat, lon) {
     // Dibujo el punto en el mapa.
     L.marker([lat, lon]).addTo(miMapa);
-    // Array con los puntos del mapa que voy a usar para la lï¿½nea.
+    // Array con los puntos del mapa que voy a usar para la linea.
     const puntosLinea = [
         [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
         [lat, lon]
     ];
-    // Calculo la distancia usando la librerï¿½a. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
+    // Calculo la distancia usando la libreria. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
     const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
-    // Dibujo una lï¿½nea amarilla con un pop up mostrando la distancia.
+    // Dibujo una linea amarilla con un pop up mostrando la distancia.
     const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
-    // Centro el mapa en la lï¿½nea.
+    // Centro el mapa en la linea.
     miMapa.fitBounds(polyline.getBounds());
 }
 
@@ -633,33 +701,33 @@ function prepareCallback(err, status) {
         ons.notification.alert(JSON.stringify(err));
     }
     if (status.authorized) {
-        // Tenemos acceso y el escaner está inicializado.
+        // Tenemos acceso y el escaner estï¿½ inicializado.
     } else if (status.denied) {
-        // El usuario rechazó el pedido, la pantalla queda en negro.
+        // El usuario rechazï¿½ el pedido, la pantalla queda en negro.
         ons.notification.alert('status.denied');
-        // Podemos volver a preguntar mandando al usuario a la configuración de permisos con QRScanner.openSettings().
+        // Podemos volver a preguntar mandando al usuario a la configuraciï¿½n de permisos con QRScanner.openSettings().
     } else {
-        // Nos rechazaron solo por esta vez. Podríamos volver a hacer el pedido.
+        // Nos rechazaron solo por esta vez. Podrï¿½amos volver a hacer el pedido.
         ons.notification.toast("Nos cancelaron una sola vez", { timeout: 2000 });
     }
 }
 
-// Función que me lleva a la pantalla de escaneo.
+// Funciï¿½n que me lleva a la pantalla de escaneo.
 function irAlScan() {
     myNavigator.pushPage("qrPage.html");
 }
 
-// Función que se dispara al ingresar a la página de escaneo.
+// Funciï¿½n que se dispara al ingresar a la pï¿½gina de escaneo.
 function escanear() {
     // Si hay scanner
     if (window.QRScanner) {
         // Esto lo uso para mostrar la cam en la app.
         // Por defecto la vista previa queda por encima del body y el html.
         // Pero por un tema de compatibilidad con Onsen, queda por debajo de la page.
-        // Mirar el css y ver cómo hay que hacer que esta page sea transparente para que se vea la cámara.
+        // Mirar el css y ver cï¿½mo hay que hacer que esta page sea transparente para que se vea la cï¿½mara.
         window.QRScanner.show(
             function (status) {
-                // Función de scan y su callback
+                // Funciï¿½n de scan y su callback
                 window.QRScanner.scan(scanCallback);
             }
         );
@@ -668,10 +736,10 @@ function escanear() {
 
 function scanCallback(err, text) {
     if (err) {
-        // Ocurrió un error o el escaneo fue cancelado(error code '6').
+        // Ocurriï¿½ un error o el escaneo fue cancelado(error code '6').
         ons.notification.alert(JSON.stringify(err));
     } else {
-        // Si no hay error escondo el callback y vuelvo a la pantalla anterior pasando el string que se escaneó con la url del producto.
+        // Si no hay error escondo el callback y vuelvo a la pantalla anterior pasando el string que se escaneï¿½ con la url del producto.
         QRScanner.hide();
         myNavigator.popPage({ data: { scanText: text } });
     }
@@ -679,7 +747,7 @@ function scanCallback(err, text) {
 
 // Si hay algo escaneado trae el producto y lo muestra
 function cargarBusquedaQr() {
-    // Si me pasaron datos por parámetro en la navegación.
+    // Si me pasaron datos por parï¿½metro en la navegaciï¿½n.
     // Hacer this.data es lo mismo que hacer myNavigator.topPage.data
     if (this.data && this.data.scanText) {
         ons.notification.alert(this.data.scanText);
@@ -717,7 +785,7 @@ function cargarBusquedaQr() {
     }
 }  
 
-// Función de callback de error ajax.
+// Funciï¿½n de callback de error ajax.
 function errorCallBack(resp) {
     console.log(resp);
     // Si el status es 401 quiere decir que no estoy autorizado.
