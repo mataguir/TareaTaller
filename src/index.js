@@ -18,6 +18,12 @@ let productoAComprar;
 // Sucursales
 let sucursales = [];
 
+// Distancias
+let distanciaGlobal;
+
+// Pedido Seleccionado
+let pedidoSeleccionado;
+
 //Expresión regular para chequear el mail
 const emailformat = /^(?:([.!#$%&'*+-/=?^_`])(?!\1+))*([\w-éüîñçè我買二ノ宮संपर्क日本]+(?:([.!#$%&'*+-/=?^_`;])(?!\3+)[\w-éüîñçè我買二ノ宮संपर्क日本]*)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,20}(?:\.[a-z]{2})?)$/i;
 
@@ -46,7 +52,6 @@ document.addEventListener(
 
 function todoCargado() {
     myNavigator = document.querySelector('#navigator');
-    $("#btnBuscarDireccion").click(btnBuscarDireccionHandler);
     inicializar();
 }
 
@@ -380,11 +385,42 @@ function buscarEtiquetas(etiqueta, param) {
  /******************************
  * PEDIDOS
  ******************************/
-function realizarPedido() {
-    console.log(productoAComprar);
-}
 
-function cargarDetallesPedido() {
+ function agregarComentario(param) {
+     console.log(param);
+     pedidoSeleccionado = $('#tabla-pedidos tr').eq(param)
+     $('#dialogo').show();
+ }
+
+ function enviarComentario() {
+    $('#dialogo').hide();
+    let id = pedidoSeleccionado.data('id');
+    const com = $('#comentario').val();
+    const comentario = {comentario: com}
+    $.ajax({
+        type: 'PUT',
+        url: urlBase + 'pedidos/id',
+        contentType: 'application/json',
+        data: JSON.stringify(comentario),
+        beforeSend: cargarTokenEnRequest,
+        success: refrescarPagina,
+        error: enviarComentarioErrorCallback
+    });
+ }
+
+ function refrescarPagina(response) {
+     console.log(response);//no me dio el tiempo para esto
+ }
+
+ function enviarComentarioErrorCallback(error) {
+    console.log(error.responseJSON.error);
+ }
+
+ function esconderDialogo() {
+     $('#dialogo').hide();
+ }
+
+ function cargarDetallesPedido() {
     $('#nombre-producto').html(`${productoAComprar.nombre}`);
     $('#precio-producto').html(`${productoAComprar.precio}`);
     cargarSucursales();
@@ -392,13 +428,16 @@ function cargarDetallesPedido() {
 
 function cargarPedidos(pedidos) {
     $('#tabla-pedidos').html('');
-    $('#tabla-pedidos').append(`<tr><td>${pedidos.nombre}</td>
-    <td>${pedidos.precio}</td>
-    <td><img src="${urlImagen+pedidos.urlImagen}.jpg" width="100" height="100"></td>
-    <td>${pedidos.codigo}</td>
-    <td>${pedidos.etiquetas}</td>
-    <td>${pedidos.estado}</td>
-    <td>${pedidos.sucursal}</td></tr>`);
+    for (let i = 0; i < pedidos.length; i++) {
+        $('#tabla-pedidos').append(`<tr data-id="${pedidos[i]._id}" onclick="agregarComentario(${i})"><td>${pedidos[i].producto.nombre}</td>
+        <td>${pedidos[i].total}</td>
+        <td><img src="${urlImagen+pedidos[i].producto.urlImagen}.jpg" width="100" height="100"></td>
+        <td>${pedidos[i].producto.codigo}</td>
+        <td>${pedidos[i].producto.etiquetas}</td>
+        <td>${pedidos[i].producto.estado}</td>
+        <td>${pedidos[i].sucursal.nombre}</td></tr>`);
+    }
+
 }
 
 function traerPedidos() {
@@ -415,6 +454,50 @@ function traerPedidos() {
 }
 
 function traerPedidosErrorCallback(error) {
+    console.log(error.responseJSON.error);
+}
+
+function comprar() {
+    $('#nombre-producto').html(`${productoAComprar.nombre}`);
+    $('#precio-producto').html(`${productoAComprar.precio}`);
+    $('#nombre-producto').data("id", productoAComprar._id);
+    let nombre = $('#select-sucursal').find(":selected").text()
+    let idP = $('#nombre-producto').data("id");
+    let idS;
+    let cantidad = $('#cantidad-compra').val()
+    if (cantidad > 0) {
+        for (let i = 0; i < sucursales.length; i++) {
+            if (sucursales[i].nombre == nombre) {
+                idS = sucursales[i]._id;
+            }
+        }
+        altaPedido(cantidad, idP, idS);
+    }
+    else {
+        $('#mensaje-pedido').html('La cantidad debe ser mayor a 0');
+    }
+}
+
+function altaPedido(cantidad, idP, idS) {
+    const pedido = {
+        cantidad: cantidad,
+        idProducto: idP,
+        idSucursal: idS
+      }
+    $.ajax({
+        type: 'POST',
+        url: urlBase + 'pedidos',
+        contentType: 'application/json',
+        beforeSend: cargarTokenEnRequest,
+        data: JSON.stringify(pedido),
+            success: function(response) {
+                alert('Pedido confirmado');
+            },
+        error: altaPedidoErrorCallback
+    });
+}
+
+function altaPedidoErrorCallback(error) {
     console.log(error.responseJSON.error);
 }
 
@@ -524,7 +607,7 @@ function agregarFavorito(prod, icono) {
         for (let i = 0; i < arrayUsuarioFav.length; i++) {
             for (let j = 0; j < arrayUsuarioFav[i].favoritos.length; j++) {
                 if (arrayUsuarioFav[i].favoritos[j]._id == productoId) {
-                    // Elimino la receta del array de favoritos
+                    // Elimino del array de favoritos
                     arrayUsuarioFav[i].favoritos.splice(j, 1);
                     encontrada = true;
                 }
@@ -658,26 +741,25 @@ function inicializarMapa() {
           accessToken: "your.mapbox.access.token"
       }
     ).addTo(miMapa);
-    cargarPosicionesSucursales();
 }
 
-function cargarPosicionesSucursales() {
+function elegirSucursal() {
+    let nombre = $('#select-sucursal').find(":selected").text();
+    let dir;
     for (let i = 0; i < sucursales.length; i++) {
-        buscarDireccion(sucursales[i].direccion, sucursales[i].nombre);
+        if (sucursales[i].nombre == nombre) {
+            dir = sucursales[i].direccion;
+        }
     }
+    buscarDireccion(dir, nombre);
 }
 
 function mostrarSucursales() {
     $('#select-sucursal').html('')
     for (let i = 0; i < sucursales.length; i++) {
-        $('#select-sucursal').append(`<option value=${sucursales[i].id}>${sucursales[i].nombre}</option>`);
+        $('#select-sucursal').append(`<option value=${sucursales[i].nombre}>${sucursales[i].nombre}</option>`);
     }
 }
-
-function buscarSucursal() {
-    
-}
-
 
 // Funcion que usa la API de OpenStreetMap para buscar las coordenadas de una direccion.
 function buscarDireccion(direccionBuscada, sucursal) {
@@ -702,9 +784,8 @@ function buscarDireccion(direccionBuscada, sucursal) {
 
 // Funcion que se encarga de dibujar un punto en el mapa y agregar una una linea desde la posicion del usuario hasta el punto dibujado.
 function dibujarDistancia(lat, lon, sucursal) {
-    debugger
     // Dibujo el punto en el mapa.
-    L.marker([lat, lon]).addTo(miMapa).bindPopup(sucursal).openPopUp();
+    L.marker([lat, lon]).addTo(miMapa).bindPopup(`${sucursal}`).openPopup();
     // Array con los puntos del mapa que voy a usar para la linea.
     const puntosLinea = [
         [posicionDelUsuario.latitude, posicionDelUsuario.longitude],
@@ -712,6 +793,7 @@ function dibujarDistancia(lat, lon, sucursal) {
     ];
     // Calculo la distancia usando la libreria. Divido entre 1000 para obtener los km y me quedo con 2 decimales.
     const distancia = Number(miMapa.distance([posicionDelUsuario.latitude, posicionDelUsuario.longitude], [lat, lon]) / 1000).toFixed(2);
+    distanciaGlobal = distancia;
     // Dibujo una linea amarilla con un pop up mostrando la distancia.
     const polyline = L.polyline(puntosLinea, { color: 'yellow' }).addTo(miMapa).bindPopup(`Distancia ${distancia} km.`).openPopup();;
     // Centro el mapa en la linea.
@@ -726,7 +808,7 @@ function cargarSucursales(){
     beforeSend: cargarTokenEnRequest,
     success: function (response) {
         sucursales = response.data;
-        mostrarSucursales()
+        mostrarSucursales();
     },
     error: cargarSucursalesError
     });
@@ -735,11 +817,6 @@ function cargarSucursales(){
 //hacer bien las funciones de ok y de error
 function cargarSucursalesError(error){
     console.log(error.responseJSON.error);
-}
-
-function btnBuscarDireccionHandler() {
-    const direccionBuscada = $("#inputDireccionBuscada").val();
-    buscarDireccion(direccionBuscada);
 }
 
 /******************************

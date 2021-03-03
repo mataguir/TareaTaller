@@ -192,6 +192,7 @@
                     <ons-input id="cantidad-compra" modifier="material underbar" type="number" placeholder="Cantidad" float></ons-input>
                 </p>
                 <p style="color: red;" id="mensaje-pedido"></p>
+                <ons-button modifier="" onclick="comprar()">Comprar</ons-button>
             </div>
             <!-- Combo para mostrar las sucursales -->
             <div id="divContenidoSucursales" style="text-align: center; margin-top: 30px;">
@@ -201,25 +202,10 @@
                         <select style="margin: 20px 0;" id="select-sucursal" class="select-input">
                         </select>
                     </ons-select><br>
-                    <ons-button modifier="" onclick="buscarSucursal()">Elegir</ons-button>
+                    <ons-button modifier="" onclick="elegirSucursal()">Elegir</ons-button>
                 </div><br>
-                <div id="divResultadoSucursal" style="text-align: center; margin-top: 30px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Distancia</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaResultadoSucursal"></tbody>
-                    </table>
-                </div><br><br>
                 <!-- Div donde se dibujará nuestro mapa -->
                 <div id="contenedor-mapa" style="width: 100%; height: 500px;"></div>
-                <!--si le agrego disabled al boton, aparece desactivado hasta que llene los campos-->
-                <p style="margin-top: 30px;" id="boton-realizar-pedido">
-                    <ons-button ripple onclick="realizarPedido()">Hacer Pedido</ons-button>
-                </p>
                 <p style="text-align: center; opacity: 0.6;">
                     <ons-button onclick="volverACatalogo()" modifier="large--quiet">Volver</ons-button>
                 </p>
@@ -269,7 +255,6 @@
         <ons-page>
             <script>
                 ons.getScriptPage().onInit = traerPedidos;
-                ons.getScriptPage().onShow = cargarPosicionDelUsuario;
             </script>
             <ons-toolbar>
                 <div class="right">
@@ -307,17 +292,16 @@
                         <tbody id="tabla-pedidos"></tbody>
                     </table>
                 </div>
-                
             </ons-card>
-            <!-- En esta div hay botones para pedir ubicación en el mapa del usuario y mostrar las sucursales -->
-            <br><br>
-            <div>
-                <input type="text" placeholder="Dirección buscada" id="inputDireccionBuscada">
-                <input type="button" value="Buscar" id="btnBuscarDireccion">
-            </div>
-            <br><br>
-            <!-- Div donde se dibujará nuestro mapa -->
-            <div id="contenedor-mapa" style="width: 380px; height: 380px;"></div>
+            <ons-dialog id="dialogo">
+                <div style="text-align: center; padding: 10px;">
+                    <p>
+                        <ons-input id="comentario" modifier="material underbar" placeholder="Escriba un comentario" float></ons-input>
+                    </p>
+                    <p><ons-button onclick="enviarComentario()">Enviar</ons-button></p>
+                    <p><ons-button modifier="light" onclick="esconderDialogo()">Cerrar</ons-button></p>
+                </div>
+            </ons-dialog>
         </ons-page>
     </template>
 

@@ -26,3 +26,7 @@ table tr:nth-child(even){
     background-color: transparent !important;
     
 }
+
+#dialogo {
+    display: none;
+}
